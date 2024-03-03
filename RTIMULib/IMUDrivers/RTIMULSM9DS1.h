@@ -29,28 +29,6 @@
 
 //  Define this symbol to use cache mode
 
-//#define LSM9DS1_CACHE_MODE   // not reliable at the moment
-
-#ifdef LSM9DS1_CACHE_MODE
-
-//  Cache defs
-
-#define LSM9DS1_FIFO_CHUNK_SIZE    6                       // 6 bytes of gyro data
-#define LSM9DS1_FIFO_THRESH        16                      // threshold point in fifo
-#define LSM9DS1_CACHE_BLOCK_COUNT  16                      // number of cache blocks
-
-typedef struct
-{
-    unsigned char data[LSM9DS1_FIFO_THRESH * LSM9DS1_FIFO_CHUNK_SIZE];
-    int count;                                              // number of chunks in the cache block
-    int index;                                              // current index into the cache
-    unsigned char accel[6];                                 // the raw accel readings for the block
-    unsigned char compass[6];                               // the raw compass readings for the block
-
-} LSM9DS1_CACHE_BLOCK;
-
-#endif
-
 class RTIMULSM9DS1 : public RTIMU
 {
 public:
@@ -64,13 +42,51 @@ public:
     virtual bool IMURead();
 
 private:
+    // register setters
+    
     bool setGyroSampleRate();
+    bool setGyroCTRL2();
     bool setGyroCTRL3();
+    bool setGyroCTRL4();
+    bool setAccelCTRL5();
     bool setAccelCTRL6();
     bool setAccelCTRL7();
     bool setCompassCTRL1();
     bool setCompassCTRL2();
     bool setCompassCTRL3();
+    bool setCompassCTRL4();
+    bool setCompassCTRL5();
+    bool setCtrl9();
+    bool setFifoMode();
+    bool initializeFifoBuffer();
+
+    // helpers
+    inline int checkSettingsValue(int value, int min, int max, int failsafe, const char *registerName) {
+        if (value < min || value > max) {
+            HAL_ERROR3("Invalid value %d for %s. Setting to default: %d\n", value, registerName, failsafe);
+            return failsafe;
+        }
+        return value;
+    }
+
+    void processIMUData();
+
+    static constexpr int M_SAMPLERATE_SCALAR = 952; // 952 Hz
+    static constexpr int M_MAG_SAMPLERATE_SCALAR = 80; // 80 Hz
+    // one would think that the sensor scale factors are a function of the fsr, but they are not for some wild reason
+    static constexpr RTFLOAT M_GYRO_SCALE_LOOKUP[4] = {.00875, .0175 , 0, .070 }; // 245, 500, 2000 dps
+    static constexpr RTFLOAT M_ACCEL_SCALE_LOOKUP[4] = {.000061, .000732, .000122, .000244 }; // 2, 16, 4, 8 g
+    static constexpr RTFLOAT M_COMPASS_SCALE_LOOKUP[4] = {.00014, .00029, .00043, .00058 }; // 4, 8, 12, 16 gauss  
+    
+    static constexpr unsigned int M_SENSOR_3_AXIS_BYTE_SIZE = 6;    // size of 3 axis data in bytes (2 bytes per axis, applies for accel, gyro, and compass)
+    static constexpr unsigned int M_IMU_FIFO_SIZE_MAX = 3;         // max number of fifo slots per sensor axis
+
+    unsigned char m_imuSampleSize;
+    unsigned char m_imuCacheSize;
+    unsigned char m_imuReadPtr;
+
+    unsigned char m_accelGyroAddress;
+    unsigned char m_accelOnlyAdress;
 
     unsigned char m_accelGyroSlaveAddr;                     // I2C address of accel andgyro
     unsigned char m_magSlaveAddr;                           // I2C address of mag
@@ -79,15 +95,15 @@ private:
     RTFLOAT m_accelScale;
     RTFLOAT m_compassScale;
 
-#ifdef LSM9DS1_CACHE_MODE
-    bool m_firstTime;                                       // if first sample
+    uint64_t m_magODRInterval;                              //  1e6/ODR for magnetometer
+    uint64_t m_lastMagRead;                                 // last time magnetometer was read
 
-    LSM9DS1_CACHE_BLOCK m_cache[LSM9DS1_CACHE_BLOCK_COUNT]; // the cache itself
-    int m_cacheIn;                                          // the in index
-    int m_cacheOut;                                         // the out index
-    int m_cacheCount;                                       // number of used cache blocks
+    // fifo buffer vars
+    RTIMU::RTIMUFifoBuffer m_fifoBuff;                      // fifo buffer
+    static constexpr int M_FIFO_CHUNK_SIZE = 32;  
+    static constexpr int M_FIFO_SAMPLE_SIZE = 12;
 
-#endif
+
 };
 
 #endif // _RTIMULSM9DS1_H

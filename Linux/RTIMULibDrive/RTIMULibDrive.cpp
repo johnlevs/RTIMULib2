@@ -50,7 +50,8 @@ int main()
 
     //  set up IMU
 
-    imu->IMUInit();
+    if(!imu->IMUInit()) 
+        return false;
 
     //  this is a convenient place to change fusion parameters
 
@@ -67,10 +68,10 @@ int main()
 
     while (1) {
         //  poll at the rate recommended by the IMU
-
+        // comment this line out or remove 1000 for the lsm9ds1
         usleep(imu->IMUGetPollInterval() * 1000);
 
-        while (imu->IMURead()) {
+        if (imu->IMURead()) {
             RTIMU_DATA imuData = imu->getIMUData();
             sampleCount++;
 

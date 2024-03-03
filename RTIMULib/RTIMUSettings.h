@@ -120,6 +120,7 @@
 #define RTIMULIB_LSM9DS0_COMPASS_FSR       "LSM9DS0CompassFsr"
 
 //  LSM9DS1 settings keys
+#define RTIMULIB_LSM9DS1_POLL_MODE         "LSM9DS1PollMode"
 
 #define RTIMULIB_LSM9DS1_GYRO_SAMPLERATE   "LSM9DS1GyroSampleRate"
 #define RTIMULIB_LSM9DS1_GYRO_BW           "LSM9DS1GyroBW"
@@ -129,9 +130,13 @@
 #define RTIMULIB_LSM9DS1_ACCEL_SAMPLERATE  "LSM9DS1AccelSampleRate"
 #define RTIMULIB_LSM9DS1_ACCEL_FSR         "LSM9DS1AccelFsr"
 #define RTIMULIB_LSM9DS1_ACCEL_LPF         "LSM9DS1AccelLpf"
+#define RTIMULIB_LSM9DS1_ACCEL_LPF2        "LSM9DS1AccelLpf2"
 
 #define RTIMULIB_LSM9DS1_COMPASS_SAMPLERATE "LSM9DS1CompassSampleRate"
-#define RTIMULIB_LSM9DS1_COMPASS_FSR       "LSM9DS1CompassFsr"
+#define RTIMULIB_LSM9DS1_COMPASS_FSR        "LSM9DS1CompassFsr"
+#define RTIMULIB_LSM9DS1_COMPASS_OPMODE     "LSM9DS1CompassOpMode"
+
+#define RTIMULIB_LSM9DS1_FIFO_MODE          "LSM9DS1FifoMode"
 
 //  BMX055 settings keys
 
@@ -337,9 +342,14 @@ public:
     int m_LSM9DS1AccelSampleRate;                           // the accel sample rate
     int m_LSM9DS1AccelFsr;                                  // the accel full scale range
     int m_LSM9DS1AccelLpf;                                  // the accel low pass filter
+    int m_LSM9DS1AccelLpf2;                                 // HR mode LPF for accel
 
     int m_LSM9DS1CompassSampleRate;                         // the compass sample rate
     int m_LSM9DS1CompassFsr;                                // the compass full scale range
+    int m_LSM9DS1CompassOpMode;                             // the compass operating mode
+
+    int m_LSM9DS1FifoMode;                                  // the fifo mode selection
+    int m_LSM9DS1PollMode;                              // the fast poll mode selection
 
     //  BMX055
 

@@ -39,6 +39,7 @@ typedef float RTFLOAT;
 #define	RTMATH_PI					3.1415926535
 #define	RTMATH_DEGREE_TO_RAD		(RTMATH_PI / 180.0)
 #define	RTMATH_RAD_TO_DEGREE		(180.0 / RTMATH_PI)
+#define RTMATH_GUASS_TO_MICROTESLA  100.0
 
 class RTVector3;
 class RTMatrix4x4;
@@ -80,6 +81,7 @@ class RTVector3
 {
 public:
     RTVector3();
+    RTVector3(const RTVector3& vec);
     RTVector3(RTFLOAT x, RTFLOAT y, RTFLOAT z);
 
     const RTVector3&  operator +=(RTVector3& vec);
@@ -120,6 +122,7 @@ class RTQuaternion
 {
 public:
     RTQuaternion();
+    RTQuaternion(const RTQuaternion& quat);
     RTQuaternion(RTFLOAT scalar, RTFLOAT x, RTFLOAT y, RTFLOAT z);
 
     RTQuaternion& operator +=(const RTQuaternion& quat);
@@ -166,6 +169,7 @@ class RTMatrix4x4
 {
 public:
     RTMatrix4x4();
+    RTMatrix4x4(const RTMatrix4x4& mat);
 
     RTMatrix4x4& operator +=(const RTMatrix4x4& mat);
     RTMatrix4x4& operator -=(const RTMatrix4x4& mat);
