@@ -152,6 +152,17 @@ RTVector3::RTVector3()
     zero();
 }
 
+RTVector3::RTVector3(const RTVector3& vec)
+{
+    if (this == &vec)
+        return;
+
+    m_data[0] = vec.m_data[0];
+    m_data[1] = vec.m_data[1];
+    m_data[2] = vec.m_data[2];
+
+}
+
 RTVector3::RTVector3(RTFLOAT x, RTFLOAT y, RTFLOAT z)
 {
     m_data[0] = x;
@@ -260,6 +271,16 @@ RTFLOAT RTVector3::length()
 RTQuaternion::RTQuaternion()
 {
     zero();
+}
+
+RTQuaternion::RTQuaternion(const RTQuaternion& quat) {
+    if (this == &quat)
+        return;
+    
+    m_data[0] = quat.m_data[0];
+    m_data[1] = quat.m_data[1];
+    m_data[2] = quat.m_data[2];
+    m_data[3] = quat.m_data[3];
 }
 
 RTQuaternion::RTQuaternion(RTFLOAT scalar, RTFLOAT x, RTFLOAT y, RTFLOAT z)
@@ -457,6 +478,16 @@ void RTQuaternion::fromAngleVector(const RTFLOAT& angle, const RTVector3& vec)
 RTMatrix4x4::RTMatrix4x4()
 {
     fill(0);
+}
+
+RTMatrix4x4::RTMatrix4x4(const RTMatrix4x4& mat) {
+    if (this == &mat)
+        return;
+
+    for (int row = 0; row < 4; row++)
+        for (int col = 0; col < 4; col++)
+            m_data[row][col] = mat.m_data[row][col];
+
 }
 
 RTMatrix4x4& RTMatrix4x4::operator =(const RTMatrix4x4& mat)

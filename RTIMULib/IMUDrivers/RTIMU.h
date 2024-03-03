@@ -195,6 +195,58 @@ protected:
 
     static float m_axisRotation[RTIMU_AXIS_ROTATION_COUNT][9];    // array of rotation matrices
 
+
+    class RTIMUFifoBuffer {
+    private:
+        constexpr static int M_DEFAULT_SAMPLE_BYTE_COUNT = 12;                  // number of bytes in each read sample (i.e. 3 axis gyro reading with 2 bytes each = 6)
+        constexpr static int M_DEFAULT_CACHE_SIZE = 16;                         // number of sample in 1 cache
+        constexpr static int M_DEFAULT_BUFFER_SIZE = 16;                        // number of caches in buffer (buffer length)
+
+        bool m_memoryAllocated = false;
+
+
+        int m_dataSampleByteCount = M_DEFAULT_SAMPLE_BYTE_COUNT;                // number of bytes in each read sample (i.e. 3 axis gyro reading with 2 bytes each = 6)
+        int m_cacheBlockSampleSize = M_DEFAULT_CACHE_SIZE;                      // number of sample in 1 cache
+        int m_bufferSize = M_DEFAULT_BUFFER_SIZE;                               // number of caches in buffer
+
+        int m_cacheInNdx = 0;                                                   // active read in index
+        int m_cacheOutNdx = 0;                                                  // active read out index
+        int m_activeCacheLength = 0;
+        int m_activeSampleCount = 0;
+
+        typedef struct cacheblock_t {
+            uint8_t* data;
+            uint64_t timestamp;
+            int count;
+            int index;
+        } cacheblock;
+
+        cacheblock* m_cache;
+
+        //private constructor
+
+    public:
+        RTIMUFifoBuffer() {}
+        ~RTIMUFifoBuffer();
+
+        uint8_t* readIn(int byteCount);
+        void pop();                      // removes 1 count from the cache
+        unsigned char* front();          // returns the data of the front cache
+        inline uint64_t frontTimeStampBase() { return m_cache[m_cacheOutNdx % m_bufferSize].timestamp; }
+        inline uint64_t frontTimeStampScaleFactor() { return m_cache[m_cacheOutNdx % m_bufferSize].count - 1; }
+        inline uint64_t frontTimeStamp(uint64_t sampleInterval) { return frontTimeStampBase() - frontTimeStampScaleFactor() * sampleInterval;}
+
+        inline int getCacheSize() { return m_activeCacheLength; }
+        inline int getSampleSize() { return m_activeSampleCount;}
+        inline int isempty() { return m_activeCacheLength == 0; }
+        inline int isfull() { return m_activeCacheLength == m_bufferSize; }
+        inline int getCacheBlockByteSize() { return m_dataSampleByteCount * m_cacheBlockSampleSize; }
+        inline int getCacheBlockSize() { return m_cacheBlockSampleSize; }
+
+        void buildCache(int sampleByteCount, int cacheBlockSampleSize, int bufferSize);
+        inline void buildCache(int cacheBlockSampleSize, int bufferSize) { buildCache(m_dataSampleByteCount, cacheBlockSampleSize, bufferSize); }
+
+    };
  };
 
 #endif // _RTIMU_H

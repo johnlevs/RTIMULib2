@@ -578,6 +578,8 @@ void RTIMUSettings::setDefaults()
 
     //  LSM9DS1 defaults
 
+    m_LSM9DS1PollMode = LSM9DS1_FAST_POLL_MODE_OFF;
+
     m_LSM9DS1GyroSampleRate = LSM9DS1_GYRO_SAMPLERATE_119;
     m_LSM9DS1GyroBW = LSM9DS1_GYRO_BANDWIDTH_1;
     m_LSM9DS1GyroHpf = LSM9DS1_GYRO_HPF_4;
@@ -585,10 +587,14 @@ void RTIMUSettings::setDefaults()
 
     m_LSM9DS1AccelSampleRate = LSM9DS1_ACCEL_SAMPLERATE_119;
     m_LSM9DS1AccelFsr = LSM9DS1_ACCEL_FSR_8;
-    m_LSM9DS1AccelLpf = LSM9DS1_ACCEL_LPF_50;
+    m_LSM9DS1AccelLpf = LSM9DS1_ACCEL_LPF_OFF;
+    m_LSM9DS1AccelLpf2 = LSM9DS1_ACCEL_HR_LPF2_OFF;
 
     m_LSM9DS1CompassSampleRate = LSM9DS1_COMPASS_SAMPLERATE_20;
     m_LSM9DS1CompassFsr = LSM9DS1_COMPASS_FSR_4;
+    
+    m_LSM9DS1FifoMode = LSM9DS1_FIFO_CONTINUOUS_MODE; // enable fifo by default since it is that much faster
+
     // BMX055 defaults
 
     m_BMX055GyroSampleRate = BMX055_GYRO_SAMPLERATE_100_32;
@@ -889,7 +895,15 @@ bool RTIMUSettings::loadSettings()
             m_LSM9DS1CompassSampleRate = atoi(val);
         } else if (strcmp(key, RTIMULIB_LSM9DS1_COMPASS_FSR) == 0) {
             m_LSM9DS1CompassFsr = atoi(val);
-
+        } else if (strcmp(key, RTIMULIB_LSM9DS1_FIFO_MODE) == 0) {
+            m_LSM9DS1FifoMode = atoi(val);
+        } else if (strcmp(key, RTIMULIB_LSM9DS1_COMPASS_OPMODE) == 0) {
+            m_LSM9DS1CompassOpMode = atoi(val);
+        } else if (strcmp(key, RTIMULIB_LSM9DS1_POLL_MODE) == 0){
+            m_LSM9DS1PollMode = atoi(val);
+        } else if (strcmp(key, RTIMULIB_LSM9DS1_ACCEL_LPF2) == 0) {
+            m_LSM9DS1AccelLpf2 = atoi(val);
+            
         //  BMX055 settings
 
         } else if (strcmp(key, RTIMULIB_BMX055_GYRO_SAMPLERATE) == 0) {
@@ -1562,37 +1576,60 @@ bool RTIMUSettings::saveSettings()
     setComment("");
 
     setBlank();
+    setComment("polling mode - ");
+    setComment("  0 = normal polling mode ");
+    setComment("  1 = fast polling mode         - skips checking status and fifo_src registers, data is always set valid when enabled ");
+    setComment("  2 = timed fast polling mode   - skips checking status & fifo src, but only updates data at the gyro/accel sample rate ");
+    setComment("  3 = fifo caching mode         - defaults to normal if continuous fifo mode is not enabled");
+    setValue(RTIMULIB_LSM9DS1_POLL_MODE, m_LSM9DS1PollMode);
+
+    setBlank();
+    setComment("Fifo Settings - ");
+    setComment("  0 = Bypass Mode (fifo off) ");
+    setComment("  1 = FIFO mode ");
+    setComment("  3 = Continuous to Fifo mode ");
+    setComment("  4 = Bypass to Continuous mode ");
+    setComment("  6 = Continuous mode ");
+    setValue(RTIMULIB_LSM9DS1_FIFO_MODE, m_LSM9DS1FifoMode);
+
+    setBlank();
     setComment("Gyro sample rate - ");
-    setComment("  0 = 95Hz ");
-    setComment("  1 = 190Hz ");
-    setComment("  2 = 380Hz ");
-    setComment("  3 = 760Hz ");
+    setComment("  0 = gyro off ");
+    setComment("  1 = 14.9Hz ");
+    setComment("  2 = 59.5Hz ");
+    setComment("  3 = 119Hz ");
+    setComment("  4 = 238Hz ");
+    setComment("  5 = 476Hz ");
+    setComment("  6 = 952Hz ");
     setValue(RTIMULIB_LSM9DS1_GYRO_SAMPLERATE, m_LSM9DS1GyroSampleRate);
 
     setBlank();
     setComment("");
     setComment("Gyro full scale range - ");
-    setComment("  0 = 250 degrees per second ");
+    setComment("  0 = 245 degrees per second ");
     setComment("  1 = 500 degrees per second ");
-    setComment("  2 = 2000 degrees per second ");
+    setComment("  3 = 2000 degrees per second ");
     setValue(RTIMULIB_LSM9DS1_GYRO_FSR, m_LSM9DS1GyroFsr);
 
     setBlank();
     setComment("");
     setComment("Gyro high pass filter - ");
-    setComment("  0 - 9 but see the LSM9DS1 manual for details");
+    setComment(" -1 = HPF off");
+    setComment("  0 - 9 = Roughly equivilent to: (ODR/119)/(2^(selection)), but see the LSM9DS1 manual for details");
     setValue(RTIMULIB_LSM9DS1_GYRO_HPF, m_LSM9DS1GyroHpf);
 
     setBlank();
     setComment("");
     setComment("Gyro bandwidth - ");
+    setComment(" -1 = LPF2 disabled");
     setComment("  0 - 3 but see the LSM9DS1 manual for details");
     setValue(RTIMULIB_LSM9DS1_GYRO_BW, m_LSM9DS1GyroBW);
 
     setBlank();
-    setComment("Accel sample rate - ");
-    setComment("  1 = 14.9Hz ");
-    setComment("  2 = 59.5Hz ");
+    setComment("Accel sample rate (gyro sample rate is used if gyro is enabled) - ");
+    setComment("  0 = accel off ");
+    setComment("  1 = 10Hz ");
+    setComment("  2 = 50Hz ");
     setComment("  3 = 119Hz ");
     setComment("  4 = 238Hz ");
     setComment("  5 = 476Hz ");
@@ -1610,7 +1647,9 @@ bool RTIMUSettings::saveSettings()
 
     setBlank();
     setComment("");
-    setComment("Accel low pass filter - ");
+    setComment("Accel anti-aliasing filter bandwidth selection (recommended disabled) - "); // appears to remove gravity? from the accel data
+    setComment(" -2 = disabled");
+    setComment(" -1 = automatic (see lsm9ds1 manual for details)");
     setComment("  0 = 408Hz");
     setComment("  1 = 211Hz");
     setComment("  2 = 105Hz");
@@ -1619,7 +1658,19 @@ bool RTIMUSettings::saveSettings()
 
     setBlank();
     setComment("");
+    setComment("Accel Low pass filter setting (disables AA filter) - ");
+    setComment(" -1 = LPF2 disabled");
+    setComment("  0 = ODR/50 Hz");
+    setComment("  1 = ODR/100 Hz");
+    setComment("  2 = ODR/9 Hz");
+    setComment("  3 = ODR/400 Hz");
+    setValue(RTIMULIB_LSM9DS1_ACCEL_LPF2, m_LSM9DS1AccelLpf2);
+
+
+    setBlank();
+    setComment("");
     setComment("Compass sample rate - ");
+    setComment(" -1 = compass off ");
     setComment("  0 = 0.625Hz ");
     setComment("  1 = 1.25Hz ");
     setComment("  2 = 2.5Hz ");
@@ -1628,6 +1679,7 @@ bool RTIMUSettings::saveSettings()
     setComment("  5 = 20Hz ");
     setComment("  6 = 40Hz ");
     setComment("  7 = 80Hz ");
+    setComment("  8 = fast ODR - LSMDS1 manual for details");
     setValue(RTIMULIB_LSM9DS1_COMPASS_SAMPLERATE, m_LSM9DS1CompassSampleRate);
 
     setBlank();
@@ -1638,6 +1690,15 @@ bool RTIMUSettings::saveSettings()
     setComment("  2 = +/- 1200 uT ");
     setComment("  3 = +/- 1600 uT ");
     setValue(RTIMULIB_LSM9DS1_COMPASS_FSR, m_LSM9DS1CompassFsr);
+
+    setBlank();
+    setComment("");
+    setComment("Compass operating mode - ");
+    setComment("  0 = low power ");
+    setComment("  1 = medium performance ");
+    setComment("  2 = high performance ");
+    setComment("  3 = ultra-high performance ");
+    setValue(RTIMULIB_LSM9DS1_COMPASS_OPMODE, m_LSM9DS1CompassOpMode);
 
     //  BMX055 settings
 

@@ -777,7 +777,7 @@
 #define LSM9DS1_MAG_ADDRESS1        0x1d
 #define LSM9DS1_MAG_ADDRESS2        0x1e
 #define LSM9DS1_MAG_ADDRESS3        0x1f
-#define LSM9DS1_MAG_ID              0x68
+#define LSM9DS1_MAG_ID              0x3d
 
 //  LSM9DS1 Register map
 
@@ -832,17 +832,39 @@
 #define LSM9DS1_INT_GEN_THS_ZL_G    0x36
 #define LSM9DS1_INT_GEN_DUR_G       0x37
 
+// general operation
+#define LSM9DS1_FAST_POLL_MODE_OFF 0
+#define LSM9DS1_FAST_POLL_MODE 1
+#define LSM9DS1_TIMED_POLL_MODE 2
+#define LSM9DS1_FIFO_CACHE_MODE 3
+
+// fifo mode defintions
+#define LSM9DS1_FIFO_BYPASS_MODE 0
+#define LSM9DS1_FIFO_FIFO_MODE 1
+#define LSM9DS1_FIFO_CONTINUOUS_TO_FIFO_MODE 3
+#define LSM9DS1_FIFO_BYPASS_TO_CONTINUOUS_MODE 4
+#define LSM9DS1_FIFO_CONTINUOUS_MODE 6
+
+// compass operation mode definitions
+#define LSM9DS1_COMPASS_LOW_POWER_MODE 0
+#define LSM9DS1_COMPASS_MEDIUM_PERFORMANCE_MODE 1
+#define LSM9DS1_COMPASS_HIGH_PERFORMANCE_MODE 2
+#define LSM9DS1_COMPASS_ULTRA_HIGH_PERFORMANCE_MODE 3
+
+
 //  Gyro sample rate defines
 
-#define LSM9DS1_GYRO_SAMPLERATE_14_9    0
-#define LSM9DS1_GYRO_SAMPLERATE_59_5    1
-#define LSM9DS1_GYRO_SAMPLERATE_119     2
-#define LSM9DS1_GYRO_SAMPLERATE_238     3
-#define LSM9DS1_GYRO_SAMPLERATE_476     4
-#define LSM9DS1_GYRO_SAMPLERATE_952     5
+#define LSM9DS1_GYRO_SAMPLERATE_OFF     0
+#define LSM9DS1_GYRO_SAMPLERATE_14_9    1
+#define LSM9DS1_GYRO_SAMPLERATE_59_5    2
+#define LSM9DS1_GYRO_SAMPLERATE_119     3
+#define LSM9DS1_GYRO_SAMPLERATE_238     4
+#define LSM9DS1_GYRO_SAMPLERATE_476     5
+#define LSM9DS1_GYRO_SAMPLERATE_952     6
 
 //  Gyro banwidth defines
 
+#define LSM9DS1_GYRO_BANDWIDTH_OFF -1
 #define LSM9DS1_GYRO_BANDWIDTH_0    0
 #define LSM9DS1_GYRO_BANDWIDTH_1    1
 #define LSM9DS1_GYRO_BANDWIDTH_2    2
@@ -850,12 +872,13 @@
 
 //  Gyro FSR defines
 
-#define LSM9DS1_GYRO_FSR_250        0
+#define LSM9DS1_GYRO_FSR_245        0
 #define LSM9DS1_GYRO_FSR_500        1
 #define LSM9DS1_GYRO_FSR_2000       3
 
 //  Gyro high pass filter defines
 
+#define LSM9DS1_GYRO_HPF_OFF       -1
 #define LSM9DS1_GYRO_HPF_0          0
 #define LSM9DS1_GYRO_HPF_1          1
 #define LSM9DS1_GYRO_HPF_2          2
@@ -894,9 +917,9 @@
 #define LSM9DS1_MAG_INT_THS_H       0x33
 
 //  Accel sample rate defines
-
-#define LSM9DS1_ACCEL_SAMPLERATE_14_9    1
-#define LSM9DS1_ACCEL_SAMPLERATE_59_5    2
+#define LSM9DS1_ACCEL_SAMPLERATE_OFF     0
+#define LSM9DS1_ACCEL_SAMPLERATE_10      1
+#define LSM9DS1_ACCEL_SAMPLERATE_50      2
 #define LSM9DS1_ACCEL_SAMPLERATE_119     3
 #define LSM9DS1_ACCEL_SAMPLERATE_238     4
 #define LSM9DS1_ACCEL_SAMPLERATE_476     5
@@ -911,13 +934,24 @@
 
 //  Accel filter bandwidth
 
-#define LSM9DS1_ACCEL_LPF_408   0
-#define LSM9DS1_ACCEL_LPF_211   1
-#define LSM9DS1_ACCEL_LPF_105   2
-#define LSM9DS1_ACCEL_LPF_50    3
+#define LSM9DS1_ACCEL_LPF_OFF      -2
+#define LSM9DS1_ACCEL_LPF_ODRBASED -1
+#define LSM9DS1_ACCEL_LPF_408       0
+#define LSM9DS1_ACCEL_LPF_211       1
+#define LSM9DS1_ACCEL_LPF_105       2
+#define LSM9DS1_ACCEL_LPF_50        3
+
+// Accel HR filter bandwidth
+
+#define LSM9DS1_ACCEL_HR_LPF2_OFF    -1
+#define LSM9DS1_ACCEL_HR_LPF2_50      0
+#define LSM9DS1_ACCEL_HR_LPF2_100     1
+#define LSM9DS1_ACCEL_HR_LPF2_9       2
+#define LSM9DS1_ACCEL_HR_LPF2_400     3
+
 
 //  Compass sample rate defines
-
+#define LSM9DS1_COMPASS_SAMPLERATE_OFF     -1
 #define LSM9DS1_COMPASS_SAMPLERATE_0_625    0
 #define LSM9DS1_COMPASS_SAMPLERATE_1_25     1
 #define LSM9DS1_COMPASS_SAMPLERATE_2_5      2
@@ -926,6 +960,7 @@
 #define LSM9DS1_COMPASS_SAMPLERATE_20       5
 #define LSM9DS1_COMPASS_SAMPLERATE_40       6
 #define LSM9DS1_COMPASS_SAMPLERATE_80       7
+#define LSM9DS1_COMPASS_SAMPLERATE_FAST_ODR 8
 
 //  Compass FSR
 

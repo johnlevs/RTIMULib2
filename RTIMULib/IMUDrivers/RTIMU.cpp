@@ -118,7 +118,7 @@ RTIMU *RTIMU::createIMU(RTIMUSettings *settings)
         return new RTIMUBNO055(settings);
 
     case RTIMU_TYPE_HMC5883LADXL345:
-	return new RTIMU5883L(settings);
+	    return new RTIMU5883L(settings);
 
     case RTIMU_TYPE_AUTODISCOVER:
         if (settings->discoverIMU(settings->m_imuType, settings->m_busIsI2C, settings->m_I2CSlaveAddress)) {
@@ -138,8 +138,9 @@ RTIMU *RTIMU::createIMU(RTIMUSettings *settings)
 
 RTIMU::RTIMU(RTIMUSettings *settings)
 {
-    printf("********************************************");
-    printf("verison : 1.2\n");
+    printf("\n********************************************\n");
+    printf("RTIMU verison : 8.0\n");
+    printf("********************************************\n\n");
     m_settings = settings;
 
     m_compassCalibrationMode = false;
@@ -435,27 +436,26 @@ void RTIMU::calibrateAverageCompass()
 
     m_imuData.compass = m_compassAverage;
 }
-#define  SCALE_ACCEL(value,min,max)             2*(value - (max + min)/2)/         \
-                                                (max - min)
 
 void RTIMU::calibrateAccel()
 {
     if (!getAccelCalibrationValid())
         return;
 
+    if (m_imuData.accel.x() >= 0)
+        m_imuData.accel.setX(m_imuData.accel.x() / m_settings->m_accelCalMax.x());
+    else
+        m_imuData.accel.setX(m_imuData.accel.x() / -m_settings->m_accelCalMin.x());
 
+    if (m_imuData.accel.y() >= 0)
+        m_imuData.accel.setY(m_imuData.accel.y() / m_settings->m_accelCalMax.y());
+    else
+        m_imuData.accel.setY(m_imuData.accel.y() / -m_settings->m_accelCalMin.y());
 
-
-    m_imuData.accel.setX(
-        SCALE_ACCEL(m_imuData.accel.x(), m_settings->m_accelCalMin.x(), m_settings->m_accelCalMax.x())
-    );
-    m_imuData.accel.setY(
-        SCALE_ACCEL(m_imuData.accel.y(), m_settings->m_accelCalMin.y(), m_settings->m_accelCalMax.y())
-    );
-    m_imuData.accel.setZ(
-        SCALE_ACCEL(m_imuData.accel.z(), m_settings->m_accelCalMin.z(), m_settings->m_accelCalMax.z())
-    );
-
+    if (m_imuData.accel.z() >= 0)
+        m_imuData.accel.setZ(m_imuData.accel.z() / m_settings->m_accelCalMax.z());
+    else
+        m_imuData.accel.setZ(m_imuData.accel.z() / -m_settings->m_accelCalMin.z());
 }
 
 void RTIMU::updateFusion()
@@ -482,4 +482,81 @@ void RTIMU::setExtIMUData(RTFLOAT gx, RTFLOAT gy, RTFLOAT gz, RTFLOAT ax, RTFLOA
     m_imuData.compass.setZ(mz);
     m_imuData.timestamp = timestamp;
     updateFusion();
+}
+
+void RTIMU::RTIMUFifoBuffer::buildCache(int sampleByteCount, int cacheBlockSampleSize, int bufferSize) {
+    m_bufferSize = bufferSize;
+    m_cacheBlockSampleSize = cacheBlockSampleSize;
+    m_dataSampleByteCount = sampleByteCount;
+    m_cache = new cacheblock[m_bufferSize];
+    for (int i = 0; i < m_bufferSize; i++) {
+        m_cache[i].data = new unsigned char[m_cacheBlockSampleSize * m_dataSampleByteCount];
+        m_cache[i].count = 0;
+        m_cache[i].timestamp = 0;
+    }
+    m_memoryAllocated = true;
+}
+
+
+RTIMU::RTIMUFifoBuffer::~RTIMUFifoBuffer() {
+    if (!m_memoryAllocated)
+        return;
+
+    for (int i = 0; i < m_bufferSize; i++) {
+        delete[] m_cache[i].data;
+        m_cache[i].data = nullptr;
+    }
+    delete[] m_cache;
+    m_cache = nullptr;
+}
+
+uint8_t* RTIMU::RTIMUFifoBuffer::readIn(int byteCount) {
+    if (!m_memoryAllocated || byteCount <= 0)
+        return nullptr;
+    // ceil on byteCount 
+    byteCount = byteCount > m_dataSampleByteCount * m_cacheBlockSampleSize ? m_dataSampleByteCount * m_cacheBlockSampleSize : byteCount;
+
+    // set cache in ndx up in case where it exceeded the cache size in the previous readin call
+    m_cacheInNdx %= m_bufferSize;
+    // now if cache in points to cache out, move cache out up, thus "overwriting" the oldest data
+    if (m_cacheInNdx == (m_cacheOutNdx % m_bufferSize) && m_activeCacheLength > 0)
+        m_cacheOutNdx = (m_cacheOutNdx % m_bufferSize) + 1;    // modulus will be applied in pop()
+
+    // set up new cache block
+    m_cache[m_cacheInNdx].count = byteCount / m_dataSampleByteCount;
+    m_cache[m_cacheInNdx].index = 0;
+    m_cache[m_cacheInNdx].timestamp = RTMath::currentUSecsSinceEpoch();
+
+    if (m_activeCacheLength < m_bufferSize)
+        m_activeCacheLength++;
+    
+    m_activeSampleCount += byteCount / m_dataSampleByteCount;
+
+    return m_cache[m_cacheInNdx++].data;
+}
+
+void RTIMU::RTIMUFifoBuffer::pop() {
+    if (!m_memoryAllocated || m_activeCacheLength == 0)
+        return;
+
+    // set cache out ndx up in case where it exceeded the cache size in a previous pop or readIn call
+    m_cacheOutNdx %= m_bufferSize;
+
+    // if cache out points to cache in, it means the cache is empty, and should have already been handled
+    m_cache[m_cacheOutNdx].index += m_dataSampleByteCount;
+    m_cache[m_cacheOutNdx].count--;
+    m_activeSampleCount--;
+    // in the case where we just emptied the current cache block, increment cache out ndx to the next valid cache block
+    if (m_cache[m_cacheOutNdx].count <= 0) {
+        m_cacheOutNdx++;
+        m_activeCacheLength--;
+    }
+    
+}
+
+uint8_t* RTIMU::RTIMUFifoBuffer::front() {
+    if (!m_memoryAllocated || m_activeCacheLength == 0)
+        return nullptr;
+
+    return m_cache[m_cacheOutNdx % m_bufferSize].data + m_cache[m_cacheOutNdx % m_bufferSize].index;
 }

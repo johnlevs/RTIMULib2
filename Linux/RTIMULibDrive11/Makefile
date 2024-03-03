@@ -82,10 +82,7 @@ DEPS    = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureLPS25H.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5611.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5637.h \
-    $(RTIMULIBPATH)/IMUDrivers/RTHumidity.h \
-    $(RTIMULIBPATH)/IMUDrivers/RTHumidityDefs.h \
-    $(RTIMULIBPATH)/IMUDrivers/RTHumidityHTS221.h \
-    $(RTIMULIBPATH)/IMUDrivers/RTHumidityHTU21D.h \
+    $(RTIMULIBPATH)/IMUDrivers/RTIMUHMC5883LADXL345.h
 
 OBJECTS = objects/RTIMULibDrive11.o \
     objects/RTMath.o \
@@ -112,9 +109,7 @@ OBJECTS = objects/RTIMULibDrive11.o \
     objects/RTPressureLPS25H.o \
     objects/RTPressureMS5611.o \
     objects/RTPressureMS5637.o \
-    objects/RTHumidity.o \
-    objects/RTHumidityHTS221.o \
-    objects/RTHumidityHTU21D.o \
+	objects/RTIMUHMC5883LADXL345.o
 
 MAKE_TARGET	= RTIMULibDrive11
 DESTDIR		= Output/
