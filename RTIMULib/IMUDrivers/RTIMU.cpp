@@ -139,7 +139,7 @@ RTIMU *RTIMU::createIMU(RTIMUSettings *settings)
 RTIMU::RTIMU(RTIMUSettings *settings)
 {
     printf("\n********************************************\n");
-    printf("RTIMU verison : 8.0\n");
+    printf("RTIMU verison : 8.0.1\n");
     printf("********************************************\n\n");
     m_settings = settings;
 
