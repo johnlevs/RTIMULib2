@@ -145,9 +145,9 @@ bool RTIMULSM9DS1::IMUInit()
 
     m_imuData.fusionPoseValid = false;
     m_imuData.fusionQPoseValid = false;
-    m_imuData.gyroValid = m_settings->m_LSM9DS1PollMode > LSM9DS1_FAST_POLL_MODE_OFF;
-    m_imuData.accelValid = m_settings->m_LSM9DS1PollMode > LSM9DS1_FAST_POLL_MODE_OFF;
-    m_imuData.compassValid = m_settings->m_LSM9DS1PollMode > LSM9DS1_FAST_POLL_MODE_OFF;
+    m_imuData.gyroValid = m_settings->m_LSM9DS1GyroSampleRate > LSM9DS1_GYRO_HPF_OFF;
+    m_imuData.accelValid = m_settings->m_LSM9DS1AccelSampleRate > LSM9DS1_ACCEL_SAMPLERATE_OFF;
+    m_imuData.compassValid = m_settings->m_LSM9DS1CompassSampleRate > LSM9DS1_COMPASS_SAMPLERATE_OFF;
     m_imuData.pressureValid = false;
     m_imuData.temperatureValid = false;
     m_imuData.humidityValid = false;
@@ -183,7 +183,7 @@ bool RTIMULSM9DS1::setGyroSampleRate()
         m_sampleRate = 1e6 / m_sampleInterval;
     }
 
-    m_fusion->setCompassEnable(m_settings->m_LSM9DS1GyroSampleRate != LSM9DS1_GYRO_SAMPLERATE_OFF);
+    m_fusion->setGyroEnable(m_settings->m_LSM9DS1GyroSampleRate != LSM9DS1_GYRO_SAMPLERATE_OFF);
 
 
     m_settings->m_LSM9DS1GyroBW = checkSettingsValue(
@@ -610,11 +610,6 @@ bool RTIMULSM9DS1::IMURead()
 
 
     m_fifoBuff.pop();
-
-
-
-    m_imuData.temperature += !m_imuData.accelValid;
-    m_imuData.pressure += !m_imuData.gyroValid;
 
     processIMUData();
 
