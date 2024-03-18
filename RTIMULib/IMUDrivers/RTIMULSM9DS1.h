@@ -70,6 +70,7 @@ private:
     }
 
     void processIMUData();
+    bool processCache(bool readOnce);
 
     static constexpr int M_SAMPLERATE_SCALAR = 952; // 952 Hz
     static constexpr int M_MAG_SAMPLERATE_SCALAR = 80; // 80 Hz

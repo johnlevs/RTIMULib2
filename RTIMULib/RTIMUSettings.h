@@ -192,11 +192,30 @@
 #define RTIMULIB_ACCELCAL_MAXZ              "AccelCalMaxZ"
 
 
-class RTIMUSettings : public RTIMUHal
-{
-public:
+// LSM6DSL Settings
 
-    //  Standard constructor sets up for ini file in working directory
+#define RTIMULIB_LSM6DSL_GYRO_SAMPLERATE    "LSM6DSLGyroSampleRate"
+#define RTIMULIB_LSM6DSL_GYRO_FSR           "LSM6DSLGyroFSR"
+#define RTIMULIB_LSM6DSL_GYRO_LPF1          "LSM6DSLGyroLPF1"
+#define RTIMULIB_LSM6DSL_GYRO_HPF           "LSM6DSLGyroHPF"
+
+#define RTIMULIB_LSM6DSL_ACCEL_SAMPLERATE   "LSM6DSLAccelSampleRate"
+#define RTIMULIB_LSM6DSL_ACCEL_FSR          "LSM6DSLAccelFSR"
+#define RTIMULIB_LSM6DSL_ACCLE_LPFAn        "LSM6DSLAccelLPFAn"
+#define RTIMULIB_LSM6DSL_ACCEL_LPF1         "LSM6DSLAccelLPF1"
+#define RTIMULIB_LSM6DSL_ACCEL_FILTER       "LSM6DSLAccelFilter2Select"
+
+
+#define RTIMULIB_LSM6DSL_POLLING_MODE       "LSM6DSLPollMode"
+
+#define RTIMULIB_LSM6DSL_FIFO_MODE          "LSM6DSLFifoMode"
+#define RTIMULIB_LSM6DSL_FIFO_SAMPLE_RATE   "LSM6DSLFifoSampleRate"
+
+
+class RTIMUSettings : public RTIMUHal {
+    public:
+
+        //  Standard constructor sets up for ini file in working directory
 
     RTIMUSettings(const char *productType = "RTIMULib");
 
@@ -207,17 +226,17 @@ public:
     //  This function tries to find an IMU. It stops at the first valid one
     //  and returns true or else false
 
-    bool discoverIMU(int& imuType, bool& busIsI2C, unsigned char& slaveAddress);
+    bool discoverIMU(int &imuType, bool &busIsI2C, unsigned char &slaveAddress);
 
     //  This function tries to find a pressure sensor. It stops at the first valid one
     //  and returns true or else false
 
-    bool discoverPressure(int& pressureType, unsigned char& pressureAddress);
+    bool discoverPressure(int &pressureType, unsigned char &pressureAddress);
 
     //  This function tries to find a humidity sensor. It stops at the first valid one
     //  and returns true or else false
 
-    bool discoverHumidity(int& humidityType, unsigned char& humidityAddress);
+    bool discoverHumidity(int &humidityType, unsigned char &humidityAddress);
 
     //  This function sets the settings to default values.
 
@@ -361,7 +380,26 @@ public:
 
     int m_BMX055MagPreset;                                  // the mag preset code
 
-private:
+
+    // LSM6DSL
+
+    int m_LSM6DSLGyroSampleRate;                            // the gyro sample rate
+    int m_LSM6DSLGyroFSR;                                   // the gyro full scale range
+    int m_LSM6DSLGyroLPF1;                                  // the gyro low pass filter
+    int m_LSM6DSLGyroHPF;                                   // the gyro high pass filter
+
+    int m_LSM6DSLAccelSampleRate;                           // the accel sample rate
+    int m_LSM6DSLAccelFSR;                                  // the accel full scale range
+    int m_LSM6DSLAccelLPFAn;                                // the accel analog low pass filter
+    int m_LSM6DSLAccelLPF1;                                 // the accel low pass filter
+    int m_LSM6DSLAccelFilter2Select;                        // the accel filter 2 selection
+
+    int m_LSM6DSLPollMode;                                  // poll mode selection
+
+    int m_LSM6DSLFifoMode;                                  // the fifo mode selection
+    int m_LSM6DSLFifoSampleRate;                            // the fifo sample rate
+
+    private:
     void setBlank();
     void setComment(const char *comment);
     void setValue(const char *key, const bool val);

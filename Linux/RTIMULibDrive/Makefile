@@ -28,8 +28,8 @@ RTIMULIBPATH  = ../../RTIMULib
 CC    			= gcc
 CXX   			= g++
 DEFINES       	=
-CFLAGS			= -pipe -O2 -Wall -W $(DEFINES)
-CXXFLAGS      	= -pipe -O2 -Wall -W $(DEFINES)
+CFLAGS			= -pipe  -Wall -W $(DEFINES) -g
+CXXFLAGS      	= -pipe  -Wall -W $(DEFINES) -g
 INCPATH       	= -I. -I$(RTIMULIBPATH)
 LINK  			= g++
 LFLAGS			= -Wl,-O1
@@ -61,6 +61,7 @@ DEPS    = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/RTFusion.h \
     $(RTIMULIBPATH)/RTFusionKalman4.h \
     $(RTIMULIBPATH)/RTFusionRTQF.h \
+	$(RTIMULIBPATH)/RTFusionComplimentary.h \
     $(RTIMULIBPATH)/RTIMUSettings.h \
     $(RTIMULIBPATH)/RTIMUAccelCal.h \
     $(RTIMULIBPATH)/RTIMUMagCal.h \
@@ -76,12 +77,15 @@ DEPS    = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/IMUDrivers/RTIMULSM9DS1.h \
     $(RTIMULIBPATH)/IMUDrivers/RTIMUBMX055.h \
     $(RTIMULIBPATH)/IMUDrivers/RTIMUBNO055.h \
+	$(RTIMULIBPATH)/IMUDrivers/RTIMULSM6DSLLIS3MDL.h \
+	$(RTIMULIBPATH)/IMUDrivers/RTIMULSM6DSLMap.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressure.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureBMP180.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureLPS25H.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5611.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5637.h \
-    $(RTIMULIBPATH)/IMUDrivers/RTIMUHMC5883LADXL345.h
+    $(RTIMULIBPATH)/IMUDrivers/RTIMUHMC5883LADXL345.h \
+	
 
 OBJECTS = objects/RTIMULibDrive.o \
     objects/RTMath.o \
@@ -89,6 +93,7 @@ OBJECTS = objects/RTIMULibDrive.o \
     objects/RTFusion.o \
     objects/RTFusionKalman4.o \
     objects/RTFusionRTQF.o \
+	objects/RTFusionComplimentary.o \
     objects/RTIMUSettings.o \
     objects/RTIMUAccelCal.o \
     objects/RTIMUMagCal.o \
@@ -103,6 +108,7 @@ OBJECTS = objects/RTIMULibDrive.o \
     objects/RTIMULSM9DS1.o \
     objects/RTIMUBMX055.o \
     objects/RTIMUBNO055.o \
+	objects/RTIMULSM6DSLLIS3MDL.o \
     objects/RTPressure.o \
     objects/RTPressureBMP180.o \
     objects/RTPressureLPS25H.o \

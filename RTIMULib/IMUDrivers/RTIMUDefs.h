@@ -44,6 +44,7 @@
 #define RTIMU_TYPE_BMX055                   9                   // Bosch BMX055
 #define RTIMU_TYPE_BNO055                   10                  // Bosch BNO055
 #define RTIMU_TYPE_HMC5883LADXL345          11                  // HMC5883L with ADXL345 and L3G4200D
+#define RTIMU_TYPE_LSM6DSLLIS3MDL           12                  // LSM6DSL with LIS3MDL
 //----------------------------------------------------------
 //
 //  MPU-9150
@@ -1159,3 +1160,32 @@
 #define BNO055_PWR_MODE_NORMAL      0x00
 
 #endif // _RTIMUDEFS_H
+
+
+//----------------------------------------------------------
+//
+//  LSM6DSL
+
+#define LSM6DSL_ADDRESS0             0x6a
+#define LSM6DSL_ADDRESS1             0x6b   
+#define LSM6DSL_ID                   0x6a
+
+// Required registers for auto-discover
+#define LSM6DSL_WHO_AM_I             0x0f
+
+// just define defaults here
+#define LSM6DSL_GYRO_SAMPLERATE_208 5
+#define LSM6DSL_GYRO_FSR_250        1
+#define LSM6DSL_GYRO_LPF_OFF       -1
+#define LSM6DSL_GYRO_HPF_OFF       -1
+
+#define LSM6DSL_ACCEL_SAMPLERATE_208    5
+#define LSM6DSL_ACCEL_FSR_2             0
+#define LSM6DSL_ACCEL_LPF1_HALF_ODR     0
+#define LSM6DSL_ACCEL_AN_LPF_1500       0
+#define LSM6DSL_ACCEL_FILTER_BYPASS     0
+
+#define LSM6DSL_POLLING_MODE_CACHE_OFF  0
+
+#define LSM6DSL_FIFO_MODE_BYPASS        0
+#define LSM6DSL_FIFO_SAMPLERATE_208     5

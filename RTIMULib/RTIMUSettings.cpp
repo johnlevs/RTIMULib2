@@ -338,15 +338,33 @@ bool RTIMUSettings::discoverIMU(int& imuType, bool& busIsI2C, unsigned char& sla
                 return true;
             }
         }
-	if (HALRead(HMC5883_ADDRESS, HMC5883L_WHO_AM_I, 1, &result, "")) {
-	    if (result == HMC5883L_ID) {
-		imuType = RTIMU_TYPE_HMC5883LADXL345;
-		slaveAddress = HMC5883_ADDRESS;
-		busIsI2C = true;
-		HAL_INFO("Detected HMC5883L at standard address\n");
-		return true;
-	    }
-	}
+        if (HALRead(HMC5883_ADDRESS, HMC5883L_WHO_AM_I, 1, &result, "")) {
+            if (result == HMC5883L_ID) {
+            imuType = RTIMU_TYPE_HMC5883LADXL345;
+            slaveAddress = HMC5883_ADDRESS;
+            busIsI2C = true;
+            HAL_INFO("Detected HMC5883L at standard address\n");
+            return true;
+            }
+        }
+        if (HALRead(LSM6DSL_ADDRESS0, LSM6DSL_WHO_AM_I, 1, &result, "")) {
+            if (result == LSM6DSL_ID) {
+                imuType = RTIMU_TYPE_LSM6DSLLIS3MDL;
+                slaveAddress = LSM6DSL_ADDRESS0;
+                busIsI2C = true;
+                HAL_INFO("Detected LSM6DSL at standard address\n");
+                return true;
+            }
+        }
+        if (HALRead(LSM6DSL_ADDRESS1, LSM6DSL_WHO_AM_I, 1, &result, "")) {
+            if (result == LSM6DSL_ID) {
+                imuType = RTIMU_TYPE_LSM6DSLLIS3MDL;
+                slaveAddress = LSM6DSL_ADDRESS1;
+                busIsI2C = true;
+                HAL_INFO("Detected LSM6DSL at standard address\n");
+                return true;
+            }
+        }
         HALClose();
     }
 
@@ -604,6 +622,26 @@ void RTIMUSettings::setDefaults()
     m_BMX055AccelFsr = BMX055_ACCEL_FSR_8;
 
     m_BMX055MagPreset = BMX055_MAG_REGULAR;
+
+    // LSM6DSL defaults
+
+    m_LSM6DSLGyroSampleRate = LSM6DSL_GYRO_SAMPLERATE_208;
+    m_LSM6DSLGyroFSR = LSM6DSL_GYRO_FSR_250;
+    m_LSM6DSLGyroHPF = LSM6DSL_GYRO_HPF_OFF;
+    m_LSM6DSLGyroLPF1 = LSM6DSL_GYRO_LPF_OFF;
+
+    m_LSM6DSLAccelSampleRate = LSM6DSL_ACCEL_SAMPLERATE_208;
+    m_LSM6DSLAccelFSR = LSM6DSL_ACCEL_FSR_2;
+    m_LSM6DSLAccelLPFAn = LSM6DSL_ACCEL_AN_LPF_1500;
+    m_LSM6DSLAccelLPF1 = LSM6DSL_ACCEL_LPF1_HALF_ODR;
+    m_LSM6DSLAccelFilter2Select = LSM6DSL_ACCEL_FILTER_BYPASS;
+
+    m_LSM6DSLPollMode = LSM6DSL_POLLING_MODE_CACHE_OFF;
+
+    m_LSM6DSLFifoMode = LSM6DSL_FIFO_MODE_BYPASS;
+    m_LSM6DSLFifoSampleRate = LSM6DSL_FIFO_SAMPLERATE_208;
+    
+
 }
 
 bool RTIMUSettings::loadSettings()
@@ -917,6 +955,17 @@ bool RTIMUSettings::loadSettings()
         } else if (strcmp(key, RTIMULIB_BMX055_MAG_PRESET) == 0) {
             m_BMX055MagPreset = atoi(val);
 
+        // LSM6DSL settings
+        } else if (strcmp(key, RTIMULIB_LSM6DSL_GYRO_SAMPLERATE) == 0){
+            m_LSM6DSLGyroSampleRate = atoi(val);
+        } else if (strcmp(key, RTIMULIB_LSM6DSL_GYRO_FSR) == 0){
+            m_LSM6DSLGyroFSR = atoi(val);
+            
+        } else if (strcmp(key, RTIMULIB_LSM6DSL_ACCEL_SAMPLERATE) == 0){
+            m_LSM6DSLAccelSampleRate = atoi(val);
+        } else if (strcmp(key, RTIMULIB_LSM6DSL_ACCEL_FSR) == 0){
+            m_LSM6DSLAccelFSR = atoi(val);
+
         //  Handle unrecognized key
 
         } else {
@@ -958,6 +1007,7 @@ bool RTIMUSettings::saveSettings()
     setComment("  9 = Bosch BMX055");
     setComment("  10 = Bosch BNX055");
     setComment("  11 = HMC5883L + ADXL345 + L3G4200D");
+    setComment("  12 = STM LSM6DSL + LIS3MDL");
     setValue(RTIMULIB_IMU_TYPE, m_imuType);
 
     setBlank();
@@ -966,6 +1016,7 @@ bool RTIMUSettings::saveSettings()
     setComment("  0 - Null. Use if only sensor data required without fusion");
     setComment("  1 - Kalman STATE4");
     setComment("  2 - RTQF");
+    setComment("  3 - RTComplimentaryFilter");
     setValue(RTIMULIB_FUSION_TYPE, m_fusionType);
 
     setBlank();
@@ -1761,6 +1812,74 @@ bool RTIMUSettings::saveSettings()
     setComment("  2 = Enhanced");
     setComment("  3 = High accuracy");
     setValue(RTIMULIB_BMX055_MAG_PRESET, m_BMX055MagPreset);
+
+    // LSM6DSL settings
+
+    setBlank();
+    setComment("#####################################################################");
+    setComment("");
+    setComment("LSM6DSL settings");
+    setComment("");
+
+    // GYRO SETTINGS
+    setBlank();
+    setComment("");
+    setComment("Gyro sample rate - ");
+    setComment("  0 = disabled ");
+    setComment("  1 = 12.5Hz ");
+    setComment("  2 = 26Hz ");
+    setComment("  3 = 52Hz ");
+    setComment("  4 = 104Hz ");
+    setComment("  5 = 208Hz ");
+    setComment("  6 = 416Hz ");
+    setComment("  7 = 833Hz ");
+    setComment("  8 = 1660Hz ");
+    setComment("  9 = 3330Hz ");
+    setComment("  10 = 6660Hz ");
+    setValue(RTIMULIB_LSM6DSL_GYRO_SAMPLERATE, m_LSM6DSLGyroSampleRate);
+
+
+    setBlank();
+    setComment("");
+    setComment("Gyro full scale range - ");
+    setComment("  0 = 125 degrees per second ");
+    setComment("  1 = 250 degrees per second ");
+    setComment("  2 = 500 degrees per second ");
+    setComment("  3 = 1000 degrees per second ");
+    setComment("  4 = 2000 degrees per second ");
+    setValue(RTIMULIB_LSM6DSL_GYRO_FSR, m_LSM6DSLGyroFSR);
+
+
+    // ACCEL SETTINGS
+    setBlank();
+    setComment("");
+    setComment("Accel sample rate - ");
+    setComment("  0 = disabled ");
+    setComment("  1 = 12.5Hz ");
+    setComment("  2 = 26Hz ");
+    setComment("  3 = 52Hz ");
+    setComment("  4 = 104Hz ");
+    setComment("  5 = 208Hz ");
+    setComment("  6 = 416Hz ");
+    setComment("  7 = 833Hz ");
+    setComment("  8 = 1660Hz ");
+    setComment("  9 = 3330Hz ");
+    setComment("  10 = 6660Hz ");
+    setValue(RTIMULIB_LSM6DSL_ACCEL_SAMPLERATE, m_LSM6DSLAccelSampleRate);
+
+    setBlank();
+    setComment("");
+    setComment("Accel full scale range - ");
+    setComment("  0 = 2g ");
+    setComment("  1 = 16g ");
+    setComment("  2 = 4g ");
+    setComment("  3 = 8g ");
+    setValue(RTIMULIB_LSM6DSL_ACCEL_FSR, m_LSM6DSLAccelFSR);
+
+    // FIFO SETTINGS
+
+    // MAG (LIS3MDL)
+    
 
     fclose(m_fd);
     return true;
