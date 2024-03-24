@@ -86,7 +86,8 @@ public:
 
     const RTVector3&  operator +=(RTVector3& vec);
     const RTVector3&  operator -=(RTVector3& vec);
-
+    const RTVector3&  operator /= (RTFLOAT val);
+    RTVector3& operator *(RTFLOAT val);
     RTVector3& operator =(const RTVector3& vec);
 
     RTFLOAT length();

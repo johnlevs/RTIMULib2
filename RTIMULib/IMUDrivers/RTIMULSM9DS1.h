@@ -70,13 +70,14 @@ private:
     }
 
     void processIMUData();
+    bool processCache(bool readOnce);
 
     static constexpr int M_SAMPLERATE_SCALAR = 952; // 952 Hz
     static constexpr int M_MAG_SAMPLERATE_SCALAR = 80; // 80 Hz
     // one would think that the sensor scale factors are a function of the fsr, but they are not for some wild reason
-    static constexpr RTFLOAT M_GYRO_SCALE_LOOKUP[4] = {.00875, .0175 , 0, .070 }; // 245, 500, 2000 dps
-    static constexpr RTFLOAT M_ACCEL_SCALE_LOOKUP[4] = {.000061, .000732, .000122, .000244 }; // 2, 16, 4, 8 g
-    static constexpr RTFLOAT M_COMPASS_SCALE_LOOKUP[4] = {.00014, .00029, .00043, .00058 }; // 4, 8, 12, 16 gauss  
+    const RTFLOAT M_GYRO_SCALE_LOOKUP[4] = {.00875, .0175 , 0, .070 }; // 245, 500, 2000 dps
+    const RTFLOAT M_ACCEL_SCALE_LOOKUP[4] = {.000061, .000732, .000122, .000244 }; // 2, 16, 4, 8 g
+    const RTFLOAT M_COMPASS_SCALE_LOOKUP[4] = {.00014, .00029, .00043, .00058 }; // 4, 8, 12, 16 gauss  
     
     static constexpr unsigned int M_SENSOR_3_AXIS_BYTE_SIZE = 6;    // size of 3 axis data in bytes (2 bytes per axis, applies for accel, gyro, and compass)
     static constexpr unsigned int M_IMU_FIFO_SIZE_MAX = 3;         // max number of fifo slots per sensor axis

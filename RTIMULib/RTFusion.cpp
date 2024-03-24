@@ -34,7 +34,8 @@
 const char *RTFusion::m_fusionNameMap[] = {
     "NULL",
     "Kalman STATE4",
-    "RTQF"};
+    "RTQF",
+    "RTComplimentary"};
 
 RTFusion::RTFusion()
 {

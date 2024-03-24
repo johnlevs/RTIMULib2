@@ -25,6 +25,7 @@
 #include "RTIMU.h"
 #include "RTFusionKalman4.h"
 #include "RTFusionRTQF.h"
+#include "RTFusionComplimentary.h"
 
 #include "RTIMUNull.h"
 #include "RTIMUMPU9150.h"
@@ -37,6 +38,7 @@
 #include "RTIMUBMX055.h"
 #include "RTIMUBNO055.h"
 #include "RTIMUHMC5883LADXL345.h"
+#include "RTIMULSM6DSLLIS3MDL.h"
 
 //  this sets the learning rate for compass running average calculation
 
@@ -120,6 +122,9 @@ RTIMU *RTIMU::createIMU(RTIMUSettings *settings)
     case RTIMU_TYPE_HMC5883LADXL345:
 	    return new RTIMU5883L(settings);
 
+    case RTIMU_TYPE_LSM6DSLLIS3MDL:
+        return new RTIMULSM6DSLLIS3MDL(settings);
+
     case RTIMU_TYPE_AUTODISCOVER:
         if (settings->discoverIMU(settings->m_imuType, settings->m_busIsI2C, settings->m_I2CSlaveAddress)) {
             settings->saveSettings();
@@ -160,6 +165,10 @@ RTIMU::RTIMU(RTIMUSettings *settings)
 
     case RTFUSION_TYPE_RTQF:
         m_fusion = new RTFusionRTQF();
+        break;
+
+    case RTFUSION_TYPE_COMPLIMENTARY:
+        m_fusion = new RTFusionComplimentary();
         break;
 
     default:

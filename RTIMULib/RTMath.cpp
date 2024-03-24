@@ -197,6 +197,20 @@ const RTVector3& RTVector3::operator -=(RTVector3& vec)
     return *this;
 }
 
+const RTVector3 &RTVector3::operator/=(RTFLOAT val)
+{
+    for (int i = 0; i < 3; i++)
+        m_data[i] /= val;
+    return *this;
+}
+
+RTVector3 &RTVector3::operator*(RTFLOAT val)
+{
+    for (int i = 0; i < 3; i++)
+        m_data[i] *= val;
+    return *this;
+}
+
 void RTVector3::zero()
 {
     for (int i = 0; i < 3; i++)
