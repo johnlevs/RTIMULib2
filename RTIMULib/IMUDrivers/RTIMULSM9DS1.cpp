@@ -143,16 +143,16 @@ bool RTIMULSM9DS1::IMUInit()
 
     // set validity flags
 
-    m_imuData.fusionPoseValid  = false;
+    m_imuData.fusionPoseValid = false;
     m_imuData.fusionQPoseValid = false;
-    m_imuData.gyroValid        = m_settings->m_LSM9DS1GyroSampleRate > LSM9DS1_GYRO_SAMPLERATE_OFF;
-    m_imuData.accelValid       = m_settings->m_LSM9DS1AccelSampleRate > LSM9DS1_ACCEL_SAMPLERATE_OFF;
-    m_imuData.compassValid     = m_settings->m_LSM9DS1CompassSampleRate > LSM9DS1_COMPASS_SAMPLERATE_OFF;
-    m_imuData.pressureValid    = false;
+    m_imuData.gyroValid = m_settings->m_LSM9DS1GyroSampleRate > LSM9DS1_GYRO_SAMPLERATE_OFF;
+    m_imuData.accelValid = m_settings->m_LSM9DS1AccelSampleRate > LSM9DS1_ACCEL_SAMPLERATE_OFF;
+    m_imuData.compassValid = m_settings->m_LSM9DS1CompassSampleRate > LSM9DS1_COMPASS_SAMPLERATE_OFF;
+    m_imuData.pressureValid = false;
     m_imuData.temperatureValid = false;
-    m_imuData.humidityValid    = false;
-    m_imuData.pressure         = 0;
-    m_imuData.temperature      = 0;
+    m_imuData.humidityValid = false;
+    m_imuData.pressure = 0;
+    m_imuData.temperature = 0;
 
 
 
@@ -525,7 +525,7 @@ bool RTIMULSM9DS1::initializeFifoBuffer()
 
 int RTIMULSM9DS1::IMUGetPollInterval()
 {
-    return  (RTMath::currentUSecsSinceEpoch() > m_sampleInterval + m_imuData.timestamp) ? 0 : (m_sampleInterval + m_imuData.timestamp - RTMath::currentUSecsSinceEpoch());
+    return  (RTMath::currentUSecsSinceEpoch() > m_sampleInterval + m_imuData.timestamp) ? 0 : (m_sampleInterval + m_imuData.timestamp - RTMath::currentUSecsSinceEpoch())/1000; // divide by 1000 to apease all the example lib drivers I guess
 }
 
 bool RTIMULSM9DS1::IMURead()
@@ -538,7 +538,7 @@ bool RTIMULSM9DS1::IMURead()
 
     bool isCompassSampleRateOn = m_settings->m_LSM9DS1CompassSampleRate != LSM9DS1_COMPASS_SAMPLERATE_OFF;
     bool isTimeForMagRead = now >= m_magODRInterval + m_lastMagRead;
-    bool isFifoSampleSizeSufficient = m_settings->m_LSM9DS1PollMode != LSM9DS1_FIFO_CACHE_MODE || m_fifoBuff.getSampleSize() > 1;
+    bool isFifoSampleSizeSufficient = m_settings->m_LSM9DS1PollMode != LSM9DS1_FIFO_CACHE_MODE || m_fifoBuff.getSampleSize() >= 1;
     bool isNotFifoCacheMode = m_settings->m_LSM9DS1PollMode != LSM9DS1_FIFO_CACHE_MODE;
     bool isTimeForCacheRead = m_fifoBuff.frontTimeStampBase() + m_sampleInterval * M_IMU_FIFO_SIZE_MAX <= now;
 
@@ -582,7 +582,7 @@ bool RTIMULSM9DS1::IMURead()
             if (!m_settings->m_LSM9DS1PollMode)
                 m_imuData.compassValid = compassData[0] & 0x08;
 
-            if (m_imuData.compassValid){
+            if (m_imuData.compassValid) {
                 RTMath::convertToVector(&compassData[1], m_imuData.compass, m_compassScale, false);
 
                 //  sort out compass axes
@@ -597,9 +597,11 @@ bool RTIMULSM9DS1::IMURead()
             }
         }
     }
+    // next mag read detects if the next read would be mag read (assuming constant calls to imuRead)
+    bool nextMagRead = isCompassSampleRateOn && now + m_sampleInterval >= m_magODRInterval + m_lastMagRead;
 
     // false means there's no imu data in the cache :(
-    if (!processCache(magRead))
+    if (!processCache(nextMagRead))
         return false;
     processIMUData();
 
@@ -630,27 +632,27 @@ void RTIMULSM9DS1::processIMUData()
     updateFusion();
 }
 
-bool RTIMULSM9DS1::processCache(bool magRead)
+bool RTIMULSM9DS1::processCache(bool nextMagRead)
 {
-    if (m_fifoBuff.isempty())
+    if (m_fifoBuff.getSampleSize() <= nextMagRead)
         return false;
-        
+
     RTVector3 accelTemp(0, 0, 0);
     RTVector3 gyroTemp(0, 0, 0);
     RTVector3 accelSum(0, 0, 0);
     RTVector3 gyroSum(0, 0, 0);
     RTFLOAT DTsum = 0;
     RTFLOAT dt;
-    bool readOnce = true;
+    uint64_t currentFrontTime = m_fifoBuff.frontTimeStamp(m_sampleInterval);
     // take weighted average of new data    
-    while (m_fifoBuff.getSampleSize() > 1 || readOnce) {
+    while (m_fifoBuff.getSampleSize() > nextMagRead) {
 
         if (m_imuReadPtr) {
             m_imuData.gyroValid = *(m_fifoBuff.front()) & 0x2;
             m_imuData.accelValid = *(m_fifoBuff.front()) & 0x1;
         }
-
-        dt = (m_fifoBuff.frontTimeStamp(m_sampleInterval) - m_imuData.timestamp)/1e6;
+        currentFrontTime = m_fifoBuff.frontTimeStamp(m_sampleInterval);
+        dt = (currentFrontTime - m_imuData.timestamp) / 1e6;
         if (m_settings->m_LSM9DS1GyroSampleRate > LSM9DS1_GYRO_SAMPLERATE_OFF) {
             RTMath::convertToVector(m_fifoBuff.front() + m_imuReadPtr, gyroTemp, m_gyroScale, false);
             RTMath::convertToVector(m_fifoBuff.front() + m_imuReadPtr + M_SENSOR_3_AXIS_BYTE_SIZE, accelTemp, m_accelScale, false);
@@ -662,21 +664,20 @@ bool RTIMULSM9DS1::processCache(bool magRead)
         gyroSum += (gyroTemp * dt);
 
         m_fifoBuff.pop();
-        
+
         if (!(m_imuData.gyroValid || m_imuData.accelValid))
             return false;
 
-        readOnce = false;
     }
 
-    
+
     accelSum /= DTsum;
     gyroSum /= DTsum;
 
     m_imuData.accel = accelSum;
     m_imuData.gyro = gyroSum;
 
-    m_imuData.timestamp = m_fifoBuff.frontTimeStamp(m_sampleInterval);
+    m_imuData.timestamp = currentFrontTime;
 
     return true;
 
