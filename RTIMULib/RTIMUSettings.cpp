@@ -66,7 +66,7 @@ RTIMUSettings::RTIMUSettings(const char *settingsDirectory, const char *productT
 }
 
 
-bool RTIMUSettings::discoverIMU(int& imuType, bool& busIsI2C, unsigned char& slaveAddress)
+bool RTIMUSettings::discoverIMU(int &imuType, bool &busIsI2C, unsigned char &slaveAddress)
 {
     unsigned char result;
     unsigned char altResult;
@@ -340,11 +340,11 @@ bool RTIMUSettings::discoverIMU(int& imuType, bool& busIsI2C, unsigned char& sla
         }
         if (HALRead(HMC5883_ADDRESS, HMC5883L_WHO_AM_I, 1, &result, "")) {
             if (result == HMC5883L_ID) {
-            imuType = RTIMU_TYPE_HMC5883LADXL345;
-            slaveAddress = HMC5883_ADDRESS;
-            busIsI2C = true;
-            HAL_INFO("Detected HMC5883L at standard address\n");
-            return true;
+                imuType = RTIMU_TYPE_HMC5883LADXL345;
+                slaveAddress = HMC5883_ADDRESS;
+                busIsI2C = true;
+                HAL_INFO("Detected HMC5883L at standard address\n");
+                return true;
             }
         }
         if (HALRead(LSM6DSL_ADDRESS0, LSM6DSL_WHO_AM_I, 1, &result, "")) {
@@ -407,7 +407,7 @@ bool RTIMUSettings::discoverIMU(int& imuType, bool& busIsI2C, unsigned char& sla
     return false;
 }
 
-bool RTIMUSettings::discoverPressure(int& pressureType, unsigned char& pressureAddress)
+bool RTIMUSettings::discoverPressure(int &pressureType, unsigned char &pressureAddress)
 {
     unsigned char result;
 
@@ -461,7 +461,7 @@ bool RTIMUSettings::discoverPressure(int& pressureType, unsigned char& pressureA
     return false;
 }
 
-bool RTIMUSettings::discoverHumidity(int& humidityType, unsigned char& humidityAddress)
+bool RTIMUSettings::discoverHumidity(int &humidityType, unsigned char &humidityAddress)
 {
     unsigned char result;
 
@@ -610,7 +610,7 @@ void RTIMUSettings::setDefaults()
 
     m_LSM9DS1CompassSampleRate = LSM9DS1_COMPASS_SAMPLERATE_20;
     m_LSM9DS1CompassFsr = LSM9DS1_COMPASS_FSR_4;
-    
+
     m_LSM9DS1FifoMode = LSM9DS1_FIFO_CONTINUOUS_MODE; // enable fifo by default since it is that much faster
 
     // BMX055 defaults
@@ -640,7 +640,7 @@ void RTIMUSettings::setDefaults()
 
     m_LSM6DSLFifoMode = LSM6DSL_FIFO_MODE_BYPASS;
     m_LSM6DSLFifoSampleRate = LSM6DSL_FIFO_SAMPLERATE_208;
-    
+
 
 }
 
@@ -875,7 +875,7 @@ bool RTIMUSettings::loadSettings()
 
         //  GD20HM303DLHC settings
 
-         } else if (strcmp(key, RTIMULIB_GD20HM303DLHC_GYRO_SAMPLERATE) == 0) {
+        } else if (strcmp(key, RTIMULIB_GD20HM303DLHC_GYRO_SAMPLERATE) == 0) {
             m_GD20HM303DLHCGyroSampleRate = atoi(val);
         } else if (strcmp(key, RTIMULIB_GD20HM303DLHC_GYRO_FSR) == 0) {
             m_GD20HM303DLHCGyroFsr = atoi(val);
@@ -937,11 +937,11 @@ bool RTIMUSettings::loadSettings()
             m_LSM9DS1FifoMode = atoi(val);
         } else if (strcmp(key, RTIMULIB_LSM9DS1_COMPASS_OPMODE) == 0) {
             m_LSM9DS1CompassOpMode = atoi(val);
-        } else if (strcmp(key, RTIMULIB_LSM9DS1_POLL_MODE) == 0){
+        } else if (strcmp(key, RTIMULIB_LSM9DS1_POLL_MODE) == 0) {
             m_LSM9DS1PollMode = atoi(val);
         } else if (strcmp(key, RTIMULIB_LSM9DS1_ACCEL_LPF2) == 0) {
             m_LSM9DS1AccelLpf2 = atoi(val);
-            
+
         //  BMX055 settings
 
         } else if (strcmp(key, RTIMULIB_BMX055_GYRO_SAMPLERATE) == 0) {
@@ -956,14 +956,14 @@ bool RTIMUSettings::loadSettings()
             m_BMX055MagPreset = atoi(val);
 
         // LSM6DSL settings
-        } else if (strcmp(key, RTIMULIB_LSM6DSL_GYRO_SAMPLERATE) == 0){
+        } else if (strcmp(key, RTIMULIB_LSM6DSL_GYRO_SAMPLERATE) == 0) {
             m_LSM6DSLGyroSampleRate = atoi(val);
-        } else if (strcmp(key, RTIMULIB_LSM6DSL_GYRO_FSR) == 0){
+        } else if (strcmp(key, RTIMULIB_LSM6DSL_GYRO_FSR) == 0) {
             m_LSM6DSLGyroFSR = atoi(val);
-            
-        } else if (strcmp(key, RTIMULIB_LSM6DSL_ACCEL_SAMPLERATE) == 0){
+
+        } else if (strcmp(key, RTIMULIB_LSM6DSL_ACCEL_SAMPLERATE) == 0) {
             m_LSM6DSLAccelSampleRate = atoi(val);
-        } else if (strcmp(key, RTIMULIB_LSM6DSL_ACCEL_FSR) == 0){
+        } else if (strcmp(key, RTIMULIB_LSM6DSL_ACCEL_FSR) == 0) {
             m_LSM6DSLAccelFSR = atoi(val);
 
         //  Handle unrecognized key
@@ -1162,724 +1162,727 @@ bool RTIMUSettings::saveSettings()
 
     //  MPU-9150 settings
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("MPU-9150 settings");
-    setComment("");
+    if (m_imuType == RTIMU_TYPE_MPU9150) {
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("MPU-9150 settings");
+        setComment("");
 
-    setBlank();
-    setComment("Gyro sample rate (between 5Hz and 1000Hz) ");
-    setValue(RTIMULIB_MPU9150_GYROACCEL_SAMPLERATE, m_MPU9150GyroAccelSampleRate);
+        setBlank();
+        setComment("Gyro sample rate (between 5Hz and 1000Hz) ");
+        setValue(RTIMULIB_MPU9150_GYROACCEL_SAMPLERATE, m_MPU9150GyroAccelSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Compass sample rate (between 1Hz and 100Hz) ");
-    setValue(RTIMULIB_MPU9150_COMPASS_SAMPLERATE, m_MPU9150CompassSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Compass sample rate (between 1Hz and 100Hz) ");
+        setValue(RTIMULIB_MPU9150_COMPASS_SAMPLERATE, m_MPU9150CompassSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro/accel low pass filter - ");
-    setComment("  0 - gyro: 256Hz, accel: 260Hz");
-    setComment("  1 - gyro: 188Hz, accel: 184Hz");
-    setComment("  2 - gyro: 98Hz, accel: 98Hz");
-    setComment("  3 - gyro: 42Hz, accel: 44Hz");
-    setComment("  4 - gyro: 20Hz, accel: 21Hz");
-    setComment("  5 - gyro: 10Hz, accel: 10Hz");
-    setComment("  6 - gyro: 5Hz, accel: 5Hz");
-    setValue(RTIMULIB_MPU9150_GYROACCEL_LPF, m_MPU9150GyroAccelLpf);
+        setBlank();
+        setComment("");
+        setComment("Gyro/accel low pass filter - ");
+        setComment("  0 - gyro: 256Hz, accel: 260Hz");
+        setComment("  1 - gyro: 188Hz, accel: 184Hz");
+        setComment("  2 - gyro: 98Hz, accel: 98Hz");
+        setComment("  3 - gyro: 42Hz, accel: 44Hz");
+        setComment("  4 - gyro: 20Hz, accel: 21Hz");
+        setComment("  5 - gyro: 10Hz, accel: 10Hz");
+        setComment("  6 - gyro: 5Hz, accel: 5Hz");
+        setValue(RTIMULIB_MPU9150_GYROACCEL_LPF, m_MPU9150GyroAccelLpf);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0  - +/- 250 degress per second");
-    setComment("  8  - +/- 500 degress per second");
-    setComment("  16 - +/- 1000 degress per second");
-    setComment("  24 - +/- 2000 degress per second");
-    setValue(RTIMULIB_MPU9150_GYRO_FSR, m_MPU9150GyroFsr);
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0  - +/- 250 degress per second");
+        setComment("  8  - +/- 500 degress per second");
+        setComment("  16 - +/- 1000 degress per second");
+        setComment("  24 - +/- 2000 degress per second");
+        setValue(RTIMULIB_MPU9150_GYRO_FSR, m_MPU9150GyroFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0  - +/- 2g");
-    setComment("  8  - +/- 4g");
-    setComment("  16 - +/- 8g");
-    setComment("  24 - +/- 16g");
-    setValue(RTIMULIB_MPU9150_ACCEL_FSR, m_MPU9150AccelFsr);
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0  - +/- 2g");
+        setComment("  8  - +/- 4g");
+        setComment("  16 - +/- 8g");
+        setComment("  24 - +/- 16g");
+        setValue(RTIMULIB_MPU9150_ACCEL_FSR, m_MPU9150AccelFsr);
+    }
 
     //  MPU-9250 settings
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("MPU-9250 settings");
-    setComment("");
+    else if (m_imuType == RTIMU_TYPE_MPU9250) {
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("MPU-9250 settings");
+        setComment("");
 
-    setBlank();
-    setComment("Gyro sample rate (between 5Hz and 1000Hz plus 8000Hz and 32000Hz) ");
-    setValue(RTIMULIB_MPU9250_GYROACCEL_SAMPLERATE, m_MPU9250GyroAccelSampleRate);
+        setBlank();
+        setComment("Gyro sample rate (between 5Hz and 1000Hz plus 8000Hz and 32000Hz) ");
+        setValue(RTIMULIB_MPU9250_GYROACCEL_SAMPLERATE, m_MPU9250GyroAccelSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Compass sample rate (between 1Hz and 100Hz) ");
-    setValue(RTIMULIB_MPU9250_COMPASS_SAMPLERATE, m_MPU9250CompassSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Compass sample rate (between 1Hz and 100Hz) ");
+        setValue(RTIMULIB_MPU9250_COMPASS_SAMPLERATE, m_MPU9250CompassSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro low pass filter - ");
-    setComment("  0x11 - 8800Hz, 0.64mS delay");
-    setComment("  0x10 - 3600Hz, 0.11mS delay");
-    setComment("  0x00 - 250Hz, 0.97mS delay");
-    setComment("  0x01 - 184Hz, 2.9mS delay");
-    setComment("  0x02 - 92Hz, 3.9mS delay");
-    setComment("  0x03 - 41Hz, 5.9mS delay");
-    setComment("  0x04 - 20Hz, 9.9mS delay");
-    setComment("  0x05 - 10Hz, 17.85mS delay");
-    setComment("  0x06 - 5Hz, 33.48mS delay");
-    setValue(RTIMULIB_MPU9250_GYRO_LPF, m_MPU9250GyroLpf);
+        setBlank();
+        setComment("");
+        setComment("Gyro low pass filter - ");
+        setComment("  0x11 - 8800Hz, 0.64mS delay");
+        setComment("  0x10 - 3600Hz, 0.11mS delay");
+        setComment("  0x00 - 250Hz, 0.97mS delay");
+        setComment("  0x01 - 184Hz, 2.9mS delay");
+        setComment("  0x02 - 92Hz, 3.9mS delay");
+        setComment("  0x03 - 41Hz, 5.9mS delay");
+        setComment("  0x04 - 20Hz, 9.9mS delay");
+        setComment("  0x05 - 10Hz, 17.85mS delay");
+        setComment("  0x06 - 5Hz, 33.48mS delay");
+        setValue(RTIMULIB_MPU9250_GYRO_LPF, m_MPU9250GyroLpf);
 
-    setBlank();
-    setComment("");
-    setComment("Accel low pass filter - ");
-    setComment("  0x08 - 1130Hz, 0.75mS delay");
-    setComment("  0x00 - 460Hz, 1.94mS delay");
-    setComment("  0x01 - 184Hz, 5.80mS delay");
-    setComment("  0x02 - 92Hz, 7.80mS delay");
-    setComment("  0x03 - 41Hz, 11.80mS delay");
-    setComment("  0x04 - 20Hz, 19.80mS delay");
-    setComment("  0x05 - 10Hz, 35.70mS delay");
-    setComment("  0x06 - 5Hz, 66.96mS delay");
-    setValue(RTIMULIB_MPU9250_ACCEL_LPF, m_MPU9250AccelLpf);
+        setBlank();
+        setComment("");
+        setComment("Accel low pass filter - ");
+        setComment("  0x08 - 1130Hz, 0.75mS delay");
+        setComment("  0x00 - 460Hz, 1.94mS delay");
+        setComment("  0x01 - 184Hz, 5.80mS delay");
+        setComment("  0x02 - 92Hz, 7.80mS delay");
+        setComment("  0x03 - 41Hz, 11.80mS delay");
+        setComment("  0x04 - 20Hz, 19.80mS delay");
+        setComment("  0x05 - 10Hz, 35.70mS delay");
+        setComment("  0x06 - 5Hz, 66.96mS delay");
+        setValue(RTIMULIB_MPU9250_ACCEL_LPF, m_MPU9250AccelLpf);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0  - +/- 250 degress per second");
-    setComment("  8  - +/- 500 degress per second");
-    setComment("  16 - +/- 1000 degress per second");
-    setComment("  24 - +/- 2000 degress per second");
-    setValue(RTIMULIB_MPU9250_GYRO_FSR, m_MPU9250GyroFsr);
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0  - +/- 250 degress per second");
+        setComment("  8  - +/- 500 degress per second");
+        setComment("  16 - +/- 1000 degress per second");
+        setComment("  24 - +/- 2000 degress per second");
+        setValue(RTIMULIB_MPU9250_GYRO_FSR, m_MPU9250GyroFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0  - +/- 2g");
-    setComment("  8  - +/- 4g");
-    setComment("  16 - +/- 8g");
-    setComment("  24 - +/- 16g");
-    setValue(RTIMULIB_MPU9250_ACCEL_FSR, m_MPU9250AccelFsr);
-
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0  - +/- 2g");
+        setComment("  8  - +/- 4g");
+        setComment("  16 - +/- 8g");
+        setComment("  24 - +/- 16g");
+        setValue(RTIMULIB_MPU9250_ACCEL_FSR, m_MPU9250AccelFsr);
+    }
     //  GD20HM303D settings
+    else if (m_imuType == RTIMU_TYPE_GD20HM303D) {
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("L3GD20H + LSM303D settings");
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("L3GD20H + LSM303D settings");
+        setBlank();
+        setComment("");
+        setComment("Gyro sample rate - ");
+        setComment("  0 = 12.5Hz ");
+        setComment("  1 = 25Hz ");
+        setComment("  2 = 50Hz ");
+        setComment("  3 = 100Hz ");
+        setComment("  4 = 200Hz ");
+        setComment("  5 = 400Hz ");
+        setComment("  6 = 800Hz ");
+        setValue(RTIMULIB_GD20HM303D_GYRO_SAMPLERATE, m_GD20HM303DGyroSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro sample rate - ");
-    setComment("  0 = 12.5Hz ");
-    setComment("  1 = 25Hz ");
-    setComment("  2 = 50Hz ");
-    setComment("  3 = 100Hz ");
-    setComment("  4 = 200Hz ");
-    setComment("  5 = 400Hz ");
-    setComment("  6 = 800Hz ");
-    setValue(RTIMULIB_GD20HM303D_GYRO_SAMPLERATE, m_GD20HM303DGyroSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0 = 245 degrees per second ");
+        setComment("  1 = 500 degrees per second ");
+        setComment("  2 = 2000 degrees per second ");
+        setValue(RTIMULIB_GD20HM303D_GYRO_FSR, m_GD20HM303DGyroFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0 = 245 degrees per second ");
-    setComment("  1 = 500 degrees per second ");
-    setComment("  2 = 2000 degrees per second ");
-    setValue(RTIMULIB_GD20HM303D_GYRO_FSR, m_GD20HM303DGyroFsr);
+        setBlank();
+        setComment("");
+        setComment("Gyro high pass filter - ");
+        setComment("  0 - 9 but see the L3GD20H manual for details");
+        setValue(RTIMULIB_GD20HM303D_GYRO_HPF, m_GD20HM303DGyroHpf);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro high pass filter - ");
-    setComment("  0 - 9 but see the L3GD20H manual for details");
-    setValue(RTIMULIB_GD20HM303D_GYRO_HPF, m_GD20HM303DGyroHpf);
+        setBlank();
+        setComment("");
+        setComment("Gyro bandwidth - ");
+        setComment("  0 - 3 but see the L3GD20H manual for details");
+        setValue(RTIMULIB_GD20HM303D_GYRO_BW, m_GD20HM303DGyroBW);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro bandwidth - ");
-    setComment("  0 - 3 but see the L3GD20H manual for details");
-    setValue(RTIMULIB_GD20HM303D_GYRO_BW, m_GD20HM303DGyroBW);
+        setBlank();
+        setComment("Accel sample rate - ");
+        setComment("  1 = 3.125Hz ");
+        setComment("  2 = 6.25Hz ");
+        setComment("  3 = 12.5Hz ");
+        setComment("  4 = 25Hz ");
+        setComment("  5 = 50Hz ");
+        setComment("  6 = 100Hz ");
+        setComment("  7 = 200Hz ");
+        setComment("  8 = 400Hz ");
+        setComment("  9 = 800Hz ");
+        setComment("  10 = 1600Hz ");
+        setValue(RTIMULIB_GD20HM303D_ACCEL_SAMPLERATE, m_GD20HM303DAccelSampleRate);
 
-    setBlank();
-    setComment("Accel sample rate - ");
-    setComment("  1 = 3.125Hz ");
-    setComment("  2 = 6.25Hz ");
-    setComment("  3 = 12.5Hz ");
-    setComment("  4 = 25Hz ");
-    setComment("  5 = 50Hz ");
-    setComment("  6 = 100Hz ");
-    setComment("  7 = 200Hz ");
-    setComment("  8 = 400Hz ");
-    setComment("  9 = 800Hz ");
-    setComment("  10 = 1600Hz ");
-    setValue(RTIMULIB_GD20HM303D_ACCEL_SAMPLERATE, m_GD20HM303DAccelSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0 = +/- 2g ");
+        setComment("  1 = +/- 4g ");
+        setComment("  2 = +/- 6g ");
+        setComment("  3 = +/- 8g ");
+        setComment("  4 = +/- 16g ");
+        setValue(RTIMULIB_GD20HM303D_ACCEL_FSR, m_GD20HM303DAccelFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0 = +/- 2g ");
-    setComment("  1 = +/- 4g ");
-    setComment("  2 = +/- 6g ");
-    setComment("  3 = +/- 8g ");
-    setComment("  4 = +/- 16g ");
-    setValue(RTIMULIB_GD20HM303D_ACCEL_FSR, m_GD20HM303DAccelFsr);
+        setBlank();
+        setComment("");
+        setComment("Accel low pass filter - ");
+        setComment("  0 = 773Hz");
+        setComment("  1 = 194Hz");
+        setComment("  2 = 362Hz");
+        setComment("  3 = 50Hz");
+        setValue(RTIMULIB_GD20HM303D_ACCEL_LPF, m_GD20HM303DAccelLpf);
 
-    setBlank();
-    setComment("");
-    setComment("Accel low pass filter - ");
-    setComment("  0 = 773Hz");
-    setComment("  1 = 194Hz");
-    setComment("  2 = 362Hz");
-    setComment("  3 = 50Hz");
-    setValue(RTIMULIB_GD20HM303D_ACCEL_LPF, m_GD20HM303DAccelLpf);
-
-    setBlank();
-    setComment("");
-    setComment("Compass sample rate - ");
-    setComment("  0 = 3.125Hz ");
-    setComment("  1 = 6.25Hz ");
-    setComment("  2 = 12.5Hz ");
-    setComment("  3 = 25Hz ");
-    setComment("  4 = 50Hz ");
-    setComment("  5 = 100Hz ");
-    setValue(RTIMULIB_GD20HM303D_COMPASS_SAMPLERATE, m_GD20HM303DCompassSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Compass sample rate - ");
+        setComment("  0 = 3.125Hz ");
+        setComment("  1 = 6.25Hz ");
+        setComment("  2 = 12.5Hz ");
+        setComment("  3 = 25Hz ");
+        setComment("  4 = 50Hz ");
+        setComment("  5 = 100Hz ");
+        setValue(RTIMULIB_GD20HM303D_COMPASS_SAMPLERATE, m_GD20HM303DCompassSampleRate);
 
 
-    setBlank();
-    setComment("");
-    setComment("Compass full scale range - ");
-    setComment("  0 = +/- 200 uT ");
-    setComment("  1 = +/- 400 uT ");
-    setComment("  2 = +/- 800 uT ");
-    setComment("  3 = +/- 1200 uT ");
-    setValue(RTIMULIB_GD20HM303D_COMPASS_FSR, m_GD20HM303DCompassFsr);
-
+        setBlank();
+        setComment("");
+        setComment("Compass full scale range - ");
+        setComment("  0 = +/- 200 uT ");
+        setComment("  1 = +/- 400 uT ");
+        setComment("  2 = +/- 800 uT ");
+        setComment("  3 = +/- 1200 uT ");
+        setValue(RTIMULIB_GD20HM303D_COMPASS_FSR, m_GD20HM303DCompassFsr);
+    }
     //  GD20M303DLHC settings
+    else if (m_imuType == RTIMU_TYPE_GD20HM303DLHC) {
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("L3GD20 + LSM303DLHC settings");
+        setComment("");
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("L3GD20 + LSM303DLHC settings");
-    setComment("");
+        setBlank();
+        setComment("Gyro sample rate - ");
+        setComment("  0 = 95z ");
+        setComment("  1 = 190Hz ");
+        setComment("  2 = 380Hz ");
+        setComment("  3 = 760Hz ");
+        setValue(RTIMULIB_GD20M303DLHC_GYRO_SAMPLERATE, m_GD20M303DLHCGyroSampleRate);
 
-    setBlank();
-    setComment("Gyro sample rate - ");
-    setComment("  0 = 95z ");
-    setComment("  1 = 190Hz ");
-    setComment("  2 = 380Hz ");
-    setComment("  3 = 760Hz ");
-    setValue(RTIMULIB_GD20M303DLHC_GYRO_SAMPLERATE, m_GD20M303DLHCGyroSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0 = 250 degrees per second ");
+        setComment("  1 = 500 degrees per second ");
+        setComment("  2 = 2000 degrees per second ");
+        setValue(RTIMULIB_GD20M303DLHC_GYRO_FSR, m_GD20M303DLHCGyroFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0 = 250 degrees per second ");
-    setComment("  1 = 500 degrees per second ");
-    setComment("  2 = 2000 degrees per second ");
-    setValue(RTIMULIB_GD20M303DLHC_GYRO_FSR, m_GD20M303DLHCGyroFsr);
+        setBlank();
+        setComment("");
+        setComment("Gyro high pass filter - ");
+        setComment("  0 - 9 but see the L3GD20 manual for details");
+        setValue(RTIMULIB_GD20M303DLHC_GYRO_HPF, m_GD20M303DLHCGyroHpf);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro high pass filter - ");
-    setComment("  0 - 9 but see the L3GD20 manual for details");
-    setValue(RTIMULIB_GD20M303DLHC_GYRO_HPF, m_GD20M303DLHCGyroHpf);
+        setBlank();
+        setComment("");
+        setComment("Gyro bandwidth - ");
+        setComment("  0 - 3 but see the L3GD20 manual for details");
+        setValue(RTIMULIB_GD20M303DLHC_GYRO_BW, m_GD20M303DLHCGyroBW);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro bandwidth - ");
-    setComment("  0 - 3 but see the L3GD20 manual for details");
-    setValue(RTIMULIB_GD20M303DLHC_GYRO_BW, m_GD20M303DLHCGyroBW);
+        setBlank();
+        setComment("Accel sample rate - ");
+        setComment("  1 = 1Hz ");
+        setComment("  2 = 10Hz ");
+        setComment("  3 = 25Hz ");
+        setComment("  4 = 50Hz ");
+        setComment("  5 = 100Hz ");
+        setComment("  6 = 200Hz ");
+        setComment("  7 = 400Hz ");
+        setValue(RTIMULIB_GD20M303DLHC_ACCEL_SAMPLERATE, m_GD20M303DLHCAccelSampleRate);
 
-    setBlank();
-    setComment("Accel sample rate - ");
-    setComment("  1 = 1Hz ");
-    setComment("  2 = 10Hz ");
-    setComment("  3 = 25Hz ");
-    setComment("  4 = 50Hz ");
-    setComment("  5 = 100Hz ");
-    setComment("  6 = 200Hz ");
-    setComment("  7 = 400Hz ");
-    setValue(RTIMULIB_GD20M303DLHC_ACCEL_SAMPLERATE, m_GD20M303DLHCAccelSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0 = +/- 2g ");
+        setComment("  1 = +/- 4g ");
+        setComment("  2 = +/- 8g ");
+        setComment("  3 = +/- 16g ");
+        setValue(RTIMULIB_GD20M303DLHC_ACCEL_FSR, m_GD20M303DLHCAccelFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0 = +/- 2g ");
-    setComment("  1 = +/- 4g ");
-    setComment("  2 = +/- 8g ");
-    setComment("  3 = +/- 16g ");
-    setValue(RTIMULIB_GD20M303DLHC_ACCEL_FSR, m_GD20M303DLHCAccelFsr);
+        setBlank();
+        setComment("");
+        setComment("Compass sample rate - ");
+        setComment("  0 = 0.75Hz ");
+        setComment("  1 = 1.5Hz ");
+        setComment("  2 = 3Hz ");
+        setComment("  3 = 7.5Hz ");
+        setComment("  4 = 15Hz ");
+        setComment("  5 = 30Hz ");
+        setComment("  6 = 75Hz ");
+        setComment("  7 = 220Hz ");
+        setValue(RTIMULIB_GD20M303DLHC_COMPASS_SAMPLERATE, m_GD20M303DLHCCompassSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Compass sample rate - ");
-    setComment("  0 = 0.75Hz ");
-    setComment("  1 = 1.5Hz ");
-    setComment("  2 = 3Hz ");
-    setComment("  3 = 7.5Hz ");
-    setComment("  4 = 15Hz ");
-    setComment("  5 = 30Hz ");
-    setComment("  6 = 75Hz ");
-    setComment("  7 = 220Hz ");
-    setValue(RTIMULIB_GD20M303DLHC_COMPASS_SAMPLERATE, m_GD20M303DLHCCompassSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Compass full scale range - ");
+        setComment("  1 = +/- 130 uT ");
+        setComment("  2 = +/- 190 uT ");
+        setComment("  3 = +/- 250 uT ");
+        setComment("  4 = +/- 400 uT ");
+        setComment("  5 = +/- 470 uT ");
+        setComment("  6 = +/- 560 uT ");
+        setComment("  7 = +/- 810 uT ");
+        setValue(RTIMULIB_GD20M303DLHC_COMPASS_FSR, m_GD20M303DLHCCompassFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Compass full scale range - ");
-    setComment("  1 = +/- 130 uT ");
-    setComment("  2 = +/- 190 uT ");
-    setComment("  3 = +/- 250 uT ");
-    setComment("  4 = +/- 400 uT ");
-    setComment("  5 = +/- 470 uT ");
-    setComment("  6 = +/- 560 uT ");
-    setComment("  7 = +/- 810 uT ");
-    setValue(RTIMULIB_GD20M303DLHC_COMPASS_FSR, m_GD20M303DLHCCompassFsr);
+        //  GD20HM303DLHC settings
+    } else if (m_imuType == RTIMU_TYPE_GD20HM303DLHC) {
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("L3GD20H + LSM303DLHC settings");
+        setComment("");
 
-    //  GD20HM303DLHC settings
+        setBlank();
+        setComment("");
+        setComment("Gyro sample rate - ");
+        setComment("  0 = 12.5Hz ");
+        setComment("  1 = 25Hz ");
+        setComment("  2 = 50Hz ");
+        setComment("  3 = 100Hz ");
+        setComment("  4 = 200Hz ");
+        setComment("  5 = 400Hz ");
+        setComment("  6 = 800Hz ");
+        setValue(RTIMULIB_GD20HM303DLHC_GYRO_SAMPLERATE, m_GD20HM303DLHCGyroSampleRate);
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("L3GD20H + LSM303DLHC settings");
-    setComment("");
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0 = 245 degrees per second ");
+        setComment("  1 = 500 degrees per second ");
+        setComment("  2 = 2000 degrees per second ");
+        setValue(RTIMULIB_GD20HM303DLHC_GYRO_FSR, m_GD20HM303DLHCGyroFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro sample rate - ");
-    setComment("  0 = 12.5Hz ");
-    setComment("  1 = 25Hz ");
-    setComment("  2 = 50Hz ");
-    setComment("  3 = 100Hz ");
-    setComment("  4 = 200Hz ");
-    setComment("  5 = 400Hz ");
-    setComment("  6 = 800Hz ");
-    setValue(RTIMULIB_GD20HM303DLHC_GYRO_SAMPLERATE, m_GD20HM303DLHCGyroSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Gyro high pass filter - ");
+        setComment("  0 - 9 but see the L3GD20H manual for details");
+        setValue(RTIMULIB_GD20HM303DLHC_GYRO_HPF, m_GD20HM303DLHCGyroHpf);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0 = 245 degrees per second ");
-    setComment("  1 = 500 degrees per second ");
-    setComment("  2 = 2000 degrees per second ");
-    setValue(RTIMULIB_GD20HM303DLHC_GYRO_FSR, m_GD20HM303DLHCGyroFsr);
+        setBlank();
+        setComment("");
+        setComment("Gyro bandwidth - ");
+        setComment("  0 - 3 but see the L3GD20H manual for details");
+        setValue(RTIMULIB_GD20HM303DLHC_GYRO_BW, m_GD20HM303DLHCGyroBW);
+        setBlank();
+        setComment("Accel sample rate - ");
+        setComment("  1 = 1Hz ");
+        setComment("  2 = 10Hz ");
+        setComment("  3 = 25Hz ");
+        setComment("  4 = 50Hz ");
+        setComment("  5 = 100Hz ");
+        setComment("  6 = 200Hz ");
+        setComment("  7 = 400Hz ");
+        setValue(RTIMULIB_GD20HM303DLHC_ACCEL_SAMPLERATE, m_GD20HM303DLHCAccelSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro high pass filter - ");
-    setComment("  0 - 9 but see the L3GD20H manual for details");
-    setValue(RTIMULIB_GD20HM303DLHC_GYRO_HPF, m_GD20HM303DLHCGyroHpf);
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0 = +/- 2g ");
+        setComment("  1 = +/- 4g ");
+        setComment("  2 = +/- 8g ");
+        setComment("  3 = +/- 16g ");
+        setValue(RTIMULIB_GD20HM303DLHC_ACCEL_FSR, m_GD20HM303DLHCAccelFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro bandwidth - ");
-    setComment("  0 - 3 but see the L3GD20H manual for details");
-    setValue(RTIMULIB_GD20HM303DLHC_GYRO_BW, m_GD20HM303DLHCGyroBW);
-    setBlank();
-    setComment("Accel sample rate - ");
-    setComment("  1 = 1Hz ");
-    setComment("  2 = 10Hz ");
-    setComment("  3 = 25Hz ");
-    setComment("  4 = 50Hz ");
-    setComment("  5 = 100Hz ");
-    setComment("  6 = 200Hz ");
-    setComment("  7 = 400Hz ");
-    setValue(RTIMULIB_GD20HM303DLHC_ACCEL_SAMPLERATE, m_GD20HM303DLHCAccelSampleRate);
-
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0 = +/- 2g ");
-    setComment("  1 = +/- 4g ");
-    setComment("  2 = +/- 8g ");
-    setComment("  3 = +/- 16g ");
-    setValue(RTIMULIB_GD20HM303DLHC_ACCEL_FSR, m_GD20HM303DLHCAccelFsr);
-
-    setBlank();
-    setComment("");
-    setComment("Compass sample rate - ");
-    setComment("  0 = 0.75Hz ");
-    setComment("  1 = 1.5Hz ");
-    setComment("  2 = 3Hz ");
-    setComment("  3 = 7.5Hz ");
-    setComment("  4 = 15Hz ");
-    setComment("  5 = 30Hz ");
-    setComment("  6 = 75Hz ");
-    setComment("  7 = 220Hz ");
-    setValue(RTIMULIB_GD20HM303DLHC_COMPASS_SAMPLERATE, m_GD20HM303DLHCCompassSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Compass sample rate - ");
+        setComment("  0 = 0.75Hz ");
+        setComment("  1 = 1.5Hz ");
+        setComment("  2 = 3Hz ");
+        setComment("  3 = 7.5Hz ");
+        setComment("  4 = 15Hz ");
+        setComment("  5 = 30Hz ");
+        setComment("  6 = 75Hz ");
+        setComment("  7 = 220Hz ");
+        setValue(RTIMULIB_GD20HM303DLHC_COMPASS_SAMPLERATE, m_GD20HM303DLHCCompassSampleRate);
 
 
-    setBlank();
-    setComment("");
-    setComment("Compass full scale range - ");
-    setComment("  1 = +/- 130 uT ");
-    setComment("  2 = +/- 190 uT ");
-    setComment("  3 = +/- 250 uT ");
-    setComment("  4 = +/- 400 uT ");
-    setComment("  5 = +/- 470 uT ");
-    setComment("  6 = +/- 560 uT ");
-    setComment("  7 = +/- 810 uT ");
-    setValue(RTIMULIB_GD20HM303DLHC_COMPASS_FSR, m_GD20HM303DLHCCompassFsr);
-
+        setBlank();
+        setComment("");
+        setComment("Compass full scale range - ");
+        setComment("  1 = +/- 130 uT ");
+        setComment("  2 = +/- 190 uT ");
+        setComment("  3 = +/- 250 uT ");
+        setComment("  4 = +/- 400 uT ");
+        setComment("  5 = +/- 470 uT ");
+        setComment("  6 = +/- 560 uT ");
+        setComment("  7 = +/- 810 uT ");
+        setValue(RTIMULIB_GD20HM303DLHC_COMPASS_FSR, m_GD20HM303DLHCCompassFsr);
+    } else if (m_imuType == RTIMU_TYPE_LSM9DS0) {
     //  LSM9DS0 settings
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("LSM9DS0 settings");
-    setComment("");
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("LSM9DS0 settings");
+        setComment("");
 
-    setBlank();
-    setComment("Gyro sample rate - ");
-    setComment("  0 = 95z ");
-    setComment("  1 = 190Hz ");
-    setComment("  2 = 380Hz ");
-    setComment("  3 = 760Hz ");
-    setValue(RTIMULIB_LSM9DS0_GYRO_SAMPLERATE, m_LSM9DS0GyroSampleRate);
+        setBlank();
+        setComment("Gyro sample rate - ");
+        setComment("  0 = 95z ");
+        setComment("  1 = 190Hz ");
+        setComment("  2 = 380Hz ");
+        setComment("  3 = 760Hz ");
+        setValue(RTIMULIB_LSM9DS0_GYRO_SAMPLERATE, m_LSM9DS0GyroSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0 = 250 degrees per second ");
-    setComment("  1 = 500 degrees per second ");
-    setComment("  2 = 2000 degrees per second ");
-    setValue(RTIMULIB_LSM9DS0_GYRO_FSR, m_LSM9DS0GyroFsr);
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0 = 250 degrees per second ");
+        setComment("  1 = 500 degrees per second ");
+        setComment("  2 = 2000 degrees per second ");
+        setValue(RTIMULIB_LSM9DS0_GYRO_FSR, m_LSM9DS0GyroFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro high pass filter - ");
-    setComment("  0 - 9 but see the LSM9DS0 manual for details");
-    setValue(RTIMULIB_LSM9DS0_GYRO_HPF, m_LSM9DS0GyroHpf);
+        setBlank();
+        setComment("");
+        setComment("Gyro high pass filter - ");
+        setComment("  0 - 9 but see the LSM9DS0 manual for details");
+        setValue(RTIMULIB_LSM9DS0_GYRO_HPF, m_LSM9DS0GyroHpf);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro bandwidth - ");
-    setComment("  0 - 3 but see the LSM9DS0 manual for details");
-    setValue(RTIMULIB_LSM9DS0_GYRO_BW, m_LSM9DS0GyroBW);
+        setBlank();
+        setComment("");
+        setComment("Gyro bandwidth - ");
+        setComment("  0 - 3 but see the LSM9DS0 manual for details");
+        setValue(RTIMULIB_LSM9DS0_GYRO_BW, m_LSM9DS0GyroBW);
 
-    setBlank();
-    setComment("Accel sample rate - ");
-    setComment("  1 = 3.125Hz ");
-    setComment("  2 = 6.25Hz ");
-    setComment("  3 = 12.5Hz ");
-    setComment("  4 = 25Hz ");
-    setComment("  5 = 50Hz ");
-    setComment("  6 = 100Hz ");
-    setComment("  7 = 200Hz ");
-    setComment("  8 = 400Hz ");
-    setComment("  9 = 800Hz ");
-    setComment("  10 = 1600Hz ");
-    setValue(RTIMULIB_LSM9DS0_ACCEL_SAMPLERATE, m_LSM9DS0AccelSampleRate);
+        setBlank();
+        setComment("Accel sample rate - ");
+        setComment("  1 = 3.125Hz ");
+        setComment("  2 = 6.25Hz ");
+        setComment("  3 = 12.5Hz ");
+        setComment("  4 = 25Hz ");
+        setComment("  5 = 50Hz ");
+        setComment("  6 = 100Hz ");
+        setComment("  7 = 200Hz ");
+        setComment("  8 = 400Hz ");
+        setComment("  9 = 800Hz ");
+        setComment("  10 = 1600Hz ");
+        setValue(RTIMULIB_LSM9DS0_ACCEL_SAMPLERATE, m_LSM9DS0AccelSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0 = +/- 2g ");
-    setComment("  1 = +/- 4g ");
-    setComment("  2 = +/- 6g ");
-    setComment("  3 = +/- 8g ");
-    setComment("  4 = +/- 16g ");
-    setValue(RTIMULIB_LSM9DS0_ACCEL_FSR, m_LSM9DS0AccelFsr);
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0 = +/- 2g ");
+        setComment("  1 = +/- 4g ");
+        setComment("  2 = +/- 6g ");
+        setComment("  3 = +/- 8g ");
+        setComment("  4 = +/- 16g ");
+        setValue(RTIMULIB_LSM9DS0_ACCEL_FSR, m_LSM9DS0AccelFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Accel low pass filter - ");
-    setComment("  0 = 773Hz");
-    setComment("  1 = 194Hz");
-    setComment("  2 = 362Hz");
-    setComment("  3 = 50Hz");
-    setValue(RTIMULIB_LSM9DS0_ACCEL_LPF, m_LSM9DS0AccelLpf);
+        setBlank();
+        setComment("");
+        setComment("Accel low pass filter - ");
+        setComment("  0 = 773Hz");
+        setComment("  1 = 194Hz");
+        setComment("  2 = 362Hz");
+        setComment("  3 = 50Hz");
+        setValue(RTIMULIB_LSM9DS0_ACCEL_LPF, m_LSM9DS0AccelLpf);
 
-    setBlank();
-    setComment("");
-    setComment("Compass sample rate - ");
-    setComment("  0 = 3.125Hz ");
-    setComment("  1 = 6.25Hz ");
-    setComment("  2 = 12.5Hz ");
-    setComment("  3 = 25Hz ");
-    setComment("  4 = 50Hz ");
-    setComment("  5 = 100Hz ");
-    setValue(RTIMULIB_LSM9DS0_COMPASS_SAMPLERATE, m_LSM9DS0CompassSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Compass sample rate - ");
+        setComment("  0 = 3.125Hz ");
+        setComment("  1 = 6.25Hz ");
+        setComment("  2 = 12.5Hz ");
+        setComment("  3 = 25Hz ");
+        setComment("  4 = 50Hz ");
+        setComment("  5 = 100Hz ");
+        setValue(RTIMULIB_LSM9DS0_COMPASS_SAMPLERATE, m_LSM9DS0CompassSampleRate);
 
 
-    setBlank();
-    setComment("");
-    setComment("Compass full scale range - ");
-    setComment("  0 = +/- 200 uT ");
-    setComment("  1 = +/- 400 uT ");
-    setComment("  2 = +/- 800 uT ");
-    setComment("  3 = +/- 1200 uT ");
-    setValue(RTIMULIB_LSM9DS0_COMPASS_FSR, m_LSM9DS0CompassFsr);
-
+        setBlank();
+        setComment("");
+        setComment("Compass full scale range - ");
+        setComment("  0 = +/- 200 uT ");
+        setComment("  1 = +/- 400 uT ");
+        setComment("  2 = +/- 800 uT ");
+        setComment("  3 = +/- 1200 uT ");
+        setValue(RTIMULIB_LSM9DS0_COMPASS_FSR, m_LSM9DS0CompassFsr);
+    } else if (m_imuType == RTIMU_TYPE_LSM9DS1) {
 //  LSM9DS1 settings
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("LSM9DS1 settings");
-    setComment("");
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("LSM9DS1 settings");
+        setComment("");
 
-    setBlank();
-    setComment("polling mode - ");
-    setComment("  0 = normal polling mode ");
-    setComment("  1 = fast polling mode         - skips checking status and fifo_src registers, data is always set valid when enabled ");
-    setComment("  2 = timed fast polling mode   - skips checking status & fifo src, but only updates data at the gyro/accel sample rate ");
-    setComment("  3 = fifo caching mode         - defaults to normal if continuous fifo mode is not enabled");
-    setValue(RTIMULIB_LSM9DS1_POLL_MODE, m_LSM9DS1PollMode);
+        setBlank();
+        setComment("polling mode - ");
+        setComment("  0 = normal polling mode ");
+        setComment("  1 = fast polling mode         - skips checking status and fifo_src registers, data is always set valid when enabled ");
+        setComment("  2 = timed fast polling mode   - skips checking status & fifo src, but only updates data at the gyro/accel sample rate ");
+        setComment("  3 = fifo caching mode         - defaults to normal if continuous fifo mode is not enabled");
+        setValue(RTIMULIB_LSM9DS1_POLL_MODE, m_LSM9DS1PollMode);
 
-    setBlank();
-    setComment("Fifo Settings - ");
-    setComment("  0 = Bypass Mode (fifo off) ");
-    setComment("  1 = FIFO mode ");
-    setComment("  3 = Continuous to Fifo mode ");
-    setComment("  4 = Bypass to Continuous mode ");
-    setComment("  6 = Continuous mode ");
-    setValue(RTIMULIB_LSM9DS1_FIFO_MODE, m_LSM9DS1FifoMode);
+        setBlank();
+        setComment("Fifo Settings - ");
+        setComment("  0 = Bypass Mode (fifo off) ");
+        setComment("  1 = FIFO mode ");
+        setComment("  3 = Continuous to Fifo mode ");
+        setComment("  4 = Bypass to Continuous mode ");
+        setComment("  6 = Continuous mode ");
+        setValue(RTIMULIB_LSM9DS1_FIFO_MODE, m_LSM9DS1FifoMode);
 
-    setBlank();
-    setComment("Gyro sample rate - ");
-    setComment("  0 = gyro off ");
-    setComment("  1 = 14.9Hz ");
-    setComment("  2 = 59.5Hz ");
-    setComment("  3 = 119Hz ");
-    setComment("  4 = 238Hz ");
-    setComment("  5 = 476Hz ");
-    setComment("  6 = 952Hz ");
-    setValue(RTIMULIB_LSM9DS1_GYRO_SAMPLERATE, m_LSM9DS1GyroSampleRate);
+        setBlank();
+        setComment("Gyro sample rate - ");
+        setComment("  0 = gyro off ");
+        setComment("  1 = 14.9Hz ");
+        setComment("  2 = 59.5Hz ");
+        setComment("  3 = 119Hz ");
+        setComment("  4 = 238Hz ");
+        setComment("  5 = 476Hz ");
+        setComment("  6 = 952Hz ");
+        setValue(RTIMULIB_LSM9DS1_GYRO_SAMPLERATE, m_LSM9DS1GyroSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0 = 245 degrees per second ");
-    setComment("  1 = 500 degrees per second ");
-    setComment("  3 = 2000 degrees per second ");
-    setValue(RTIMULIB_LSM9DS1_GYRO_FSR, m_LSM9DS1GyroFsr);
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0 = 245 degrees per second ");
+        setComment("  1 = 500 degrees per second ");
+        setComment("  3 = 2000 degrees per second ");
+        setValue(RTIMULIB_LSM9DS1_GYRO_FSR, m_LSM9DS1GyroFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro high pass filter - ");
-    setComment(" -1 = HPF off");
-    setComment("  0 - 9 = Roughly equivilent to: (ODR/119)/(2^(selection)), but see the LSM9DS1 manual for details");
-    setValue(RTIMULIB_LSM9DS1_GYRO_HPF, m_LSM9DS1GyroHpf);
+        setBlank();
+        setComment("");
+        setComment("Gyro high pass filter - ");
+        setComment(" -1 = HPF off");
+        setComment("  0 - 9 = Roughly equivilent to: (ODR/119)/(2^(selection)), but see the LSM9DS1 manual for details");
+        setValue(RTIMULIB_LSM9DS1_GYRO_HPF, m_LSM9DS1GyroHpf);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro bandwidth - ");
-    setComment(" -1 = LPF2 disabled");
-    setComment("  0 - 3 but see the LSM9DS1 manual for details");
-    setValue(RTIMULIB_LSM9DS1_GYRO_BW, m_LSM9DS1GyroBW);
+        setBlank();
+        setComment("");
+        setComment("Gyro bandwidth - ");
+        setComment(" -1 = LPF2 disabled");
+        setComment("  0 - 3 but see the LSM9DS1 manual for details");
+        setValue(RTIMULIB_LSM9DS1_GYRO_BW, m_LSM9DS1GyroBW);
 
-    setBlank();
-    setComment("Accel sample rate (gyro sample rate is used if gyro is enabled) - ");
-    setComment("  0 = accel off ");
-    setComment("  1 = 10Hz ");
-    setComment("  2 = 50Hz ");
-    setComment("  3 = 119Hz ");
-    setComment("  4 = 238Hz ");
-    setComment("  5 = 476Hz ");
-    setComment("  6 = 952Hz ");
-    setValue(RTIMULIB_LSM9DS1_ACCEL_SAMPLERATE, m_LSM9DS1AccelSampleRate);
+        setBlank();
+        setComment("Accel sample rate (gyro sample rate is used if gyro is enabled) - ");
+        setComment("  0 = accel off ");
+        setComment("  1 = 10Hz ");
+        setComment("  2 = 50Hz ");
+        setComment("  3 = 119Hz ");
+        setComment("  4 = 238Hz ");
+        setComment("  5 = 476Hz ");
+        setComment("  6 = 952Hz ");
+        setValue(RTIMULIB_LSM9DS1_ACCEL_SAMPLERATE, m_LSM9DS1AccelSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0 = +/- 2g ");
-    setComment("  1 = +/- 16g ");
-    setComment("  2 = +/- 4g ");
-    setComment("  3 = +/- 8g ");
-    setValue(RTIMULIB_LSM9DS1_ACCEL_FSR, m_LSM9DS1AccelFsr);
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0 = +/- 2g ");
+        setComment("  1 = +/- 16g ");
+        setComment("  2 = +/- 4g ");
+        setComment("  3 = +/- 8g ");
+        setValue(RTIMULIB_LSM9DS1_ACCEL_FSR, m_LSM9DS1AccelFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Accel anti-aliasing filter bandwidth selection (recommended disabled) - "); // appears to remove gravity? from the accel data
-    setComment(" -2 = disabled");
-    setComment(" -1 = automatic (see lsm9ds1 manual for details)");
-    setComment("  0 = 408Hz");
-    setComment("  1 = 211Hz");
-    setComment("  2 = 105Hz");
-    setComment("  3 = 50Hz");
-    setValue(RTIMULIB_LSM9DS1_ACCEL_LPF, m_LSM9DS1AccelLpf);
+        setBlank();
+        setComment("");
+        setComment("Accel anti-aliasing filter bandwidth selection (recommended disabled) - "); // appears to remove gravity? from the accel data
+        setComment(" -2 = disabled");
+        setComment(" -1 = automatic (see lsm9ds1 manual for details)");
+        setComment("  0 = 408Hz");
+        setComment("  1 = 211Hz");
+        setComment("  2 = 105Hz");
+        setComment("  3 = 50Hz");
+        setValue(RTIMULIB_LSM9DS1_ACCEL_LPF, m_LSM9DS1AccelLpf);
 
-    setBlank();
-    setComment("");
-    setComment("Accel Low pass filter setting (disables AA filter) - ");
-    setComment(" -1 = LPF2 disabled");
-    setComment("  0 = ODR/50 Hz");
-    setComment("  1 = ODR/100 Hz");
-    setComment("  2 = ODR/9 Hz");
-    setComment("  3 = ODR/400 Hz");
-    setValue(RTIMULIB_LSM9DS1_ACCEL_LPF2, m_LSM9DS1AccelLpf2);
+        setBlank();
+        setComment("");
+        setComment("Accel Low pass filter setting (disables AA filter) - ");
+        setComment(" -1 = LPF2 disabled");
+        setComment("  0 = ODR/50 Hz");
+        setComment("  1 = ODR/100 Hz");
+        setComment("  2 = ODR/9 Hz");
+        setComment("  3 = ODR/400 Hz");
+        setValue(RTIMULIB_LSM9DS1_ACCEL_LPF2, m_LSM9DS1AccelLpf2);
 
 
-    setBlank();
-    setComment("");
-    setComment("Compass sample rate - ");
-    setComment(" -1 = compass off ");
-    setComment("  0 = 0.625Hz ");
-    setComment("  1 = 1.25Hz ");
-    setComment("  2 = 2.5Hz ");
-    setComment("  3 = 5Hz ");
-    setComment("  4 = 10Hz ");
-    setComment("  5 = 20Hz ");
-    setComment("  6 = 40Hz ");
-    setComment("  7 = 80Hz ");
-    setComment("  8 = fast ODR - LSMDS1 manual for details");
-    setValue(RTIMULIB_LSM9DS1_COMPASS_SAMPLERATE, m_LSM9DS1CompassSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Compass sample rate - ");
+        setComment(" -1 = compass off ");
+        setComment("  0 = 0.625Hz ");
+        setComment("  1 = 1.25Hz ");
+        setComment("  2 = 2.5Hz ");
+        setComment("  3 = 5Hz ");
+        setComment("  4 = 10Hz ");
+        setComment("  5 = 20Hz ");
+        setComment("  6 = 40Hz ");
+        setComment("  7 = 80Hz ");
+        setComment("  8 = fast ODR - LSMDS1 manual for details");
+        setValue(RTIMULIB_LSM9DS1_COMPASS_SAMPLERATE, m_LSM9DS1CompassSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Compass full scale range - ");
-    setComment("  0 = +/- 400 uT ");
-    setComment("  1 = +/- 800 uT ");
-    setComment("  2 = +/- 1200 uT ");
-    setComment("  3 = +/- 1600 uT ");
-    setValue(RTIMULIB_LSM9DS1_COMPASS_FSR, m_LSM9DS1CompassFsr);
+        setBlank();
+        setComment("");
+        setComment("Compass full scale range - ");
+        setComment("  0 = +/- 400 uT ");
+        setComment("  1 = +/- 800 uT ");
+        setComment("  2 = +/- 1200 uT ");
+        setComment("  3 = +/- 1600 uT ");
+        setValue(RTIMULIB_LSM9DS1_COMPASS_FSR, m_LSM9DS1CompassFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Compass operating mode - ");
-    setComment("  0 = low power ");
-    setComment("  1 = medium performance ");
-    setComment("  2 = high performance ");
-    setComment("  3 = ultra-high performance ");
-    setValue(RTIMULIB_LSM9DS1_COMPASS_OPMODE, m_LSM9DS1CompassOpMode);
-
+        setBlank();
+        setComment("");
+        setComment("Compass operating mode - ");
+        setComment("  0 = low power ");
+        setComment("  1 = medium performance ");
+        setComment("  2 = high performance ");
+        setComment("  3 = ultra-high performance ");
+        setValue(RTIMULIB_LSM9DS1_COMPASS_OPMODE, m_LSM9DS1CompassOpMode);
+    } else if (m_imuType == RTIMU_TYPE_BMX055) {
     //  BMX055 settings
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("BMX055 settings");
-    setComment("");
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("BMX055 settings");
+        setComment("");
 
-    setBlank();
-    setComment("");
-    setComment("Gyro sample rate - ");
-    setComment("  0 = 2000Hz (532Hz filter)");
-    setComment("  1 = 2000Hz (230Hz filter)");
-    setComment("  2 = 1000Hz (116Hz filter)");
-    setComment("  3 = 400Hz (47Hz filter)");
-    setComment("  4 = 200Hz (23Hz filter)");
-    setComment("  5 = 100Hz (12Hz filter)");
-    setComment("  6 = 200Hz (64Hz filter)");
-    setComment("  7 = 100Hz (32Hz filter)");
-    setValue(RTIMULIB_BMX055_GYRO_SAMPLERATE, m_BMX055GyroSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Gyro sample rate - ");
+        setComment("  0 = 2000Hz (532Hz filter)");
+        setComment("  1 = 2000Hz (230Hz filter)");
+        setComment("  2 = 1000Hz (116Hz filter)");
+        setComment("  3 = 400Hz (47Hz filter)");
+        setComment("  4 = 200Hz (23Hz filter)");
+        setComment("  5 = 100Hz (12Hz filter)");
+        setComment("  6 = 200Hz (64Hz filter)");
+        setComment("  7 = 100Hz (32Hz filter)");
+        setValue(RTIMULIB_BMX055_GYRO_SAMPLERATE, m_BMX055GyroSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0 = 2000 deg/s");
-    setComment("  1 = 1000 deg/s");
-    setComment("  2 = 500 deg/s");
-    setComment("  3 = 250 deg/s");
-    setComment("  4 = 125 deg/s");
-    setValue(RTIMULIB_BMX055_GYRO_FSR, m_BMX055GyroFsr);
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0 = 2000 deg/s");
+        setComment("  1 = 1000 deg/s");
+        setComment("  2 = 500 deg/s");
+        setComment("  3 = 250 deg/s");
+        setComment("  4 = 125 deg/s");
+        setValue(RTIMULIB_BMX055_GYRO_FSR, m_BMX055GyroFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Accel sample rate - ");
-    setComment("  0 = 15.63Hz");
-    setComment("  1 = 31.25");
-    setComment("  2 = 62.5");
-    setComment("  3 = 125");
-    setComment("  4 = 250");
-    setComment("  5 = 500");
-    setComment("  6 = 1000");
-    setComment("  7 = 2000");
-    setValue(RTIMULIB_BMX055_ACCEL_SAMPLERATE, m_BMX055AccelSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Accel sample rate - ");
+        setComment("  0 = 15.63Hz");
+        setComment("  1 = 31.25");
+        setComment("  2 = 62.5");
+        setComment("  3 = 125");
+        setComment("  4 = 250");
+        setComment("  5 = 500");
+        setComment("  6 = 1000");
+        setComment("  7 = 2000");
+        setValue(RTIMULIB_BMX055_ACCEL_SAMPLERATE, m_BMX055AccelSampleRate);
 
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0 = +/- 2g");
-    setComment("  1 = +/- 4g");
-    setComment("  2 = +/- 8g");
-    setComment("  3 = +/- 16g");
-    setValue(RTIMULIB_BMX055_ACCEL_FSR, m_BMX055AccelFsr);
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0 = +/- 2g");
+        setComment("  1 = +/- 4g");
+        setComment("  2 = +/- 8g");
+        setComment("  3 = +/- 16g");
+        setValue(RTIMULIB_BMX055_ACCEL_FSR, m_BMX055AccelFsr);
 
-    setBlank();
-    setComment("");
-    setComment("Mag presets - ");
-    setComment("  0 = Low power");
-    setComment("  1 = Regular");
-    setComment("  2 = Enhanced");
-    setComment("  3 = High accuracy");
-    setValue(RTIMULIB_BMX055_MAG_PRESET, m_BMX055MagPreset);
-
+        setBlank();
+        setComment("");
+        setComment("Mag presets - ");
+        setComment("  0 = Low power");
+        setComment("  1 = Regular");
+        setComment("  2 = Enhanced");
+        setComment("  3 = High accuracy");
+        setValue(RTIMULIB_BMX055_MAG_PRESET, m_BMX055MagPreset);
+    } else if (m_imuType == RTIMU_TYPE_LSM6DSLLIS3MDL) {
     // LSM6DSL settings
 
-    setBlank();
-    setComment("#####################################################################");
-    setComment("");
-    setComment("LSM6DSL settings");
-    setComment("");
+        setBlank();
+        setComment("#####################################################################");
+        setComment("");
+        setComment("LSM6DSL settings");
+        setComment("");
 
-    // GYRO SETTINGS
-    setBlank();
-    setComment("");
-    setComment("Gyro sample rate - ");
-    setComment("  0 = disabled ");
-    setComment("  1 = 12.5Hz ");
-    setComment("  2 = 26Hz ");
-    setComment("  3 = 52Hz ");
-    setComment("  4 = 104Hz ");
-    setComment("  5 = 208Hz ");
-    setComment("  6 = 416Hz ");
-    setComment("  7 = 833Hz ");
-    setComment("  8 = 1660Hz ");
-    setComment("  9 = 3330Hz ");
-    setComment("  10 = 6660Hz ");
-    setValue(RTIMULIB_LSM6DSL_GYRO_SAMPLERATE, m_LSM6DSLGyroSampleRate);
-
-
-    setBlank();
-    setComment("");
-    setComment("Gyro full scale range - ");
-    setComment("  0 = 125 degrees per second ");
-    setComment("  1 = 250 degrees per second ");
-    setComment("  2 = 500 degrees per second ");
-    setComment("  3 = 1000 degrees per second ");
-    setComment("  4 = 2000 degrees per second ");
-    setValue(RTIMULIB_LSM6DSL_GYRO_FSR, m_LSM6DSLGyroFSR);
+        // GYRO SETTINGS
+        setBlank();
+        setComment("");
+        setComment("Gyro sample rate - ");
+        setComment("  0 = disabled ");
+        setComment("  1 = 12.5Hz ");
+        setComment("  2 = 26Hz ");
+        setComment("  3 = 52Hz ");
+        setComment("  4 = 104Hz ");
+        setComment("  5 = 208Hz ");
+        setComment("  6 = 416Hz ");
+        setComment("  7 = 833Hz ");
+        setComment("  8 = 1660Hz ");
+        setComment("  9 = 3330Hz ");
+        setComment("  10 = 6660Hz ");
+        setValue(RTIMULIB_LSM6DSL_GYRO_SAMPLERATE, m_LSM6DSLGyroSampleRate);
 
 
-    // ACCEL SETTINGS
-    setBlank();
-    setComment("");
-    setComment("Accel sample rate - ");
-    setComment("  0 = disabled ");
-    setComment("  1 = 12.5Hz ");
-    setComment("  2 = 26Hz ");
-    setComment("  3 = 52Hz ");
-    setComment("  4 = 104Hz ");
-    setComment("  5 = 208Hz ");
-    setComment("  6 = 416Hz ");
-    setComment("  7 = 833Hz ");
-    setComment("  8 = 1660Hz ");
-    setComment("  9 = 3330Hz ");
-    setComment("  10 = 6660Hz ");
-    setValue(RTIMULIB_LSM6DSL_ACCEL_SAMPLERATE, m_LSM6DSLAccelSampleRate);
+        setBlank();
+        setComment("");
+        setComment("Gyro full scale range - ");
+        setComment("  0 = 125 degrees per second ");
+        setComment("  1 = 250 degrees per second ");
+        setComment("  2 = 500 degrees per second ");
+        setComment("  3 = 1000 degrees per second ");
+        setComment("  4 = 2000 degrees per second ");
+        setValue(RTIMULIB_LSM6DSL_GYRO_FSR, m_LSM6DSLGyroFSR);
 
-    setBlank();
-    setComment("");
-    setComment("Accel full scale range - ");
-    setComment("  0 = 2g ");
-    setComment("  1 = 16g ");
-    setComment("  2 = 4g ");
-    setComment("  3 = 8g ");
-    setValue(RTIMULIB_LSM6DSL_ACCEL_FSR, m_LSM6DSLAccelFSR);
 
-    // FIFO SETTINGS
+        // ACCEL SETTINGS
+        setBlank();
+        setComment("");
+        setComment("Accel sample rate - ");
+        setComment("  0 = disabled ");
+        setComment("  1 = 12.5Hz ");
+        setComment("  2 = 26Hz ");
+        setComment("  3 = 52Hz ");
+        setComment("  4 = 104Hz ");
+        setComment("  5 = 208Hz ");
+        setComment("  6 = 416Hz ");
+        setComment("  7 = 833Hz ");
+        setComment("  8 = 1660Hz ");
+        setComment("  9 = 3330Hz ");
+        setComment("  10 = 6660Hz ");
+        setValue(RTIMULIB_LSM6DSL_ACCEL_SAMPLERATE, m_LSM6DSLAccelSampleRate);
 
-    // MAG (LIS3MDL)
-    
+        setBlank();
+        setComment("");
+        setComment("Accel full scale range - ");
+        setComment("  0 = 2g ");
+        setComment("  1 = 16g ");
+        setComment("  2 = 4g ");
+        setComment("  3 = 8g ");
+        setValue(RTIMULIB_LSM6DSL_ACCEL_FSR, m_LSM6DSLAccelFSR);
+
+        // FIFO SETTINGS
+
+        // MAG (LIS3MDL)
+    }
 
     fclose(m_fd);
     return true;
