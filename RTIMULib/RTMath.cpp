@@ -396,6 +396,13 @@ const RTQuaternion RTQuaternion::operator -(const RTFLOAT val) const
     return result;
 }
 
+const RTQuaternion RTQuaternion::operator+(const RTQuaternion &qb) const
+{
+    RTQuaternion result = *this;
+    result += qb;
+    return result;
+}
+
 
 void RTQuaternion::zero()
 {
@@ -415,6 +422,12 @@ void RTQuaternion::normalize()
     m_data[1] /= length;
     m_data[2] /= length;
     m_data[3] /= length;
+}
+
+RTFLOAT RTQuaternion::length()
+{
+    return sqrt(m_data[0] * m_data[0] + m_data[1] * m_data[1] +
+            m_data[2] * m_data[2] + m_data[3] * m_data[3]);
 }
 
 void RTQuaternion::toEuler(RTVector3& vec)
@@ -481,6 +494,29 @@ void RTQuaternion::fromAngleVector(const RTFLOAT& angle, const RTVector3& vec)
     m_data[1] = vec.x() * sinHalfTheta;
     m_data[2] = vec.y() * sinHalfTheta;
     m_data[3] = vec.z() * sinHalfTheta;
+}
+
+RTQuaternion RTQuaternion::slerp(const RTQuaternion &q1, const RTQuaternion &q2, RTFLOAT t)
+{
+    // jump out if invalid interpolation value given
+    if (t > 1)
+        return q2;
+    if (t < 0)
+        return q1;
+
+    RTQuaternion q3, q4;
+    // http://www.neil.dantam.name/note/dantam-quaternion.pdf eq. (42) for quaternion angle difference... "more accurate"
+    q3 = q1 - q2;
+    q4 = q1 + q2;
+    RTFLOAT theta = atan2(q3.length(),q4.length());
+    RTFLOAT sinTheta = sin(theta);
+
+    q3 = q1;
+    q4 = q2;
+    q4 *= sin(theta * (1 - t)) / sinTheta;
+    q3 *= sin(theta * t) / sinTheta;
+    
+    return q3 + q4;
 }
 
 

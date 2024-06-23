@@ -65,10 +65,12 @@ bool RTIMULSM6DSLLIS3MDL::IMUInit()
     m_imuData.timestamp = 0;
     dataRegRead();
 
+    // sometimes this imu needs  a bit to get situated
+    usleep(50000);
+
+    HAL_INFO("LSM6DSL init complete\n");
 
     return true;
-
-
 }
 
 int RTIMULSM6DSLLIS3MDL::IMUGetPollInterval()
@@ -153,7 +155,7 @@ bool RTIMULSM6DSLLIS3MDL::setCtrl2G()
         m_ctrl2g.fs_125 = 1;
     else
         m_ctrl2g.fs_G = tempFSR - 1;
-    m_gyroScale = GYRO_FSR[m_ctrl2g.fs_G] * RTMATH_DEGREE_TO_RAD;
+    m_gyroScale = GYRO_FSR[tempFSR] * RTMATH_DEGREE_TO_RAD;
 
 
 
@@ -224,9 +226,15 @@ bool RTIMULSM6DSLLIS3MDL::dataRegRead()
 
     if (!_readReg(STATUS_REG, rawData, 1, "Failed to read data registers"))
         return false;
+    
+    // associate timestamp with data validity read
+    m_imuData.timestamp = RTMath::currentUSecsSinceEpoch();
+    m_imuData.accelValid = rawData[0] & 1;
+    m_imuData.gyroValid = rawData[0] & 2 >> 1;
 
     if (!(rawData[0] & 3))
         return false;
+
 
     if (rawData[0] & 2) {
         if (_readReg(OUTX_L_G, &rawData[4], OUTZ_H_G - OUTX_L_G + 1, "Failed to read gyro data"))    
@@ -237,7 +245,8 @@ bool RTIMULSM6DSLLIS3MDL::dataRegRead()
             RTMath::convertToVector(&rawData[10], m_imuData.accel, m_accelScale, false);
     }
 
-    m_imuData.timestamp = RTMath::currentUSecsSinceEpoch();//processTimeStamp(((uint64_t)rawTime[2] << 16 | (uint64_t)rawTime[1] << 8 | rawTime[0]) * 25);
+    
+    //processTimeStamp(((uint64_t)rawTime[2] << 16 | (uint64_t)rawTime[1] << 8 | rawTime[0]) * 25);
 
     return true;
 }
@@ -253,12 +262,16 @@ bool RTIMULSM6DSLLIS3MDL::IMURead()
 
 
     // sort out gyro axes and correct for bias
+    RTFLOAT temp = m_imuData.gyro.x();
+    m_imuData.gyro.setX(-m_imuData.gyro.y());
+    m_imuData.gyro.setY(-temp);
     m_imuData.gyro.setZ(-m_imuData.gyro.z());
 
     //  sort out accel data;
 
-    m_imuData.accel.setX(-m_imuData.accel.x());
-    m_imuData.accel.setY(-m_imuData.accel.y());
+
+    m_imuData.accel.setX(-m_imuData.accel.y());
+    m_imuData.accel.setY(-m_imuData.accel.x());
 
     //  now do standard processing
 

@@ -27,15 +27,26 @@
 
 
 
-RTFusionComplimentary::RTFusionComplimentary()
+RTFusionComplimentary::RTFusionComplimentary() :
+    m_accelFIRFilter(M_ACCEL_FIR_ORDER),
+    m_alphaIIRFilter(M_ALPHA_IIR_ORDER)
 {
-    m_gyroAlphaThreshold = M_GYRO_FILTER_THRESHOLD;
-    m_accelAlphaThreshold = M_ACCEL_FILTER_THRESHOLD;
+    // default value for now
+    m_slerpPower = M_ACCEL_FILTER_THRESHOLD;
+
+    const RTFLOAT polesFIR[M_ACCEL_FIR_ORDER] = { 1,1,1,1,1,1,1,1,1,1 };
+    const RTFLOAT polesIIR[M_ALPHA_IIR_ORDER] = { 1,2,3,4,5 };
+    
+    m_accelFIRFilter.setPoles(polesFIR);
+    m_alphaIIRFilter.setPoles(polesIIR);
 }
 
 
 void RTFusionComplimentary::reset()
-{}
+{
+    m_accelFIRFilter.zeros();
+    m_alphaIIRFilter.zeros();
+}
 
 void RTFusionComplimentary::predict()
 {
@@ -66,25 +77,28 @@ void RTFusionComplimentary::predict()
 void RTFusionComplimentary::update()
 {
     if (m_enableAccel) {
-        m_filterAlpha = (m_accel.length() - 1.);
-        m_filterAlpha = m_filterAlpha < 0 ? -1.0 * m_filterAlpha : m_filterAlpha;
+        
+        // deterine alpha value used in slerp
+        RTFLOAT accelNorm = fabs(m_accel.length() - 1);
+        RTFLOAT lastOutput = m_alphaIIRFilter.outputFIR(false);
+        m_accelFIRFilter.add(accelNorm);
 
-        if (m_filterAlpha < m_accelAlphaThreshold)
-            m_filterAlpha = 0.;
-        else if (m_filterAlpha > m_gyroAlphaThreshold)
-            m_filterAlpha = 1.;
-        else
-            m_filterAlpha = 1 / (m_gyroAlphaThreshold - m_accelAlphaThreshold) * (m_filterAlpha - m_accelAlphaThreshold);
-
-        // copy predicted state to fusion pose
-        m_stateQ.toEuler(m_fusionPose);
-
-        // interpolate the euler angles between fusion pose & measured pose based on the adaptive gain.
-        for (int i = 0; i < 3; i++)
-            m_fusionPose.setData(i, m_measuredPose.data(i) * (1. - m_filterAlpha) + m_fusionPose.data(i) * m_filterAlpha);
-
-        m_fusionQPose.fromEuler(m_fusionPose);
+        bool bypassIR = accelNorm > lastOutput;
+        RTFLOAT accelMag = m_accelFIRFilter.outputFIR(bypassIR);
+        RTFLOAT alpha = accelMag / m_slerpPower;                   // slerp power can be set in imu drivers
+        
+        alpha = alpha > 1 ? 1 : alpha;
+        alpha = m_alphaIIRFilter.outputIIR(alpha, bypassIR);
+        alpha = alpha > 1 ? 1 : alpha;
+        
+        // slerp gyro solution with accel solution
+        m_fusionQPose = RTQuaternion::slerp(m_stateQ, m_measuredQPose, alpha);
     }
+    else {
+        m_fusionQPose = m_stateQ;
+    }
+    m_fusionQPose.toEuler(m_fusionPose);
+
 }
 
 void RTFusionComplimentary::newIMUData(RTIMU_DATA &data, const RTIMUSettings *settings)
@@ -131,4 +145,70 @@ void RTFusionComplimentary::newIMUData(RTIMU_DATA &data, const RTIMUSettings *se
 
     }
 
+}
+
+RTFusionComplimentary::IRFilter::IRFilter(uint8_t order) :
+    m_head(order - 1),
+    m_order(order)
+{
+    m_data = new RTFLOAT[m_order];
+    m_poles = new RTFLOAT[m_order];
+    zeros();
+}
+
+RTFusionComplimentary::IRFilter::~IRFilter()
+{
+    delete[] m_data;
+    delete[] m_poles;
+}
+
+void RTFusionComplimentary::IRFilter::add(RTFLOAT data)
+{
+    m_head = (m_head + 1) % m_order;
+    m_data[m_head] = data;
+
+    m_sampleCount = m_sampleCount < m_order ? m_sampleCount + 1 : m_order;
+}
+
+void RTFusionComplimentary::IRFilter::setPoles(const RTFLOAT *poles)
+{
+    RTFLOAT poleSum = 0;
+    for (int i = 0; i < m_order; i++)
+        poleSum += poles[i];
+
+    for (int i = 0; i < m_order; i++)
+        m_poles[i] = poles[i] / poleSum;
+}
+
+RTFLOAT RTFusionComplimentary::IRFilter::outputFIR(bool bypass)
+{
+    if (m_sampleCount < m_order || bypass)
+        return m_data[m_head];
+
+    RTFLOAT sum = 0;
+    for (int i = 0; i < m_order; i++)
+        sum += m_data[(m_head + i + 1) % m_order] * m_poles[m_order - 1 - i];
+    
+    return sum;
+}
+
+RTFLOAT RTFusionComplimentary::IRFilter::outputIIR(RTFLOAT data, bool bypass)
+{
+    if (m_sampleCount < m_order || bypass){
+        add(data);
+        return m_data[m_head];
+    }
+    RTFLOAT sum = 0;
+    for (int i = 0; i < m_order - 1; i++)
+        sum += m_data[(m_head + i + 2) % m_order] * m_poles[m_order - 1 - i];
+
+    add(sum + data * m_poles[0]);
+    return m_data[m_head];
+}
+
+void RTFusionComplimentary::IRFilter::zeros()
+{
+    m_sampleCount = 0;
+    for (int i = 0; i < m_order; i++)
+        m_data[i] = 0;
 }

@@ -29,11 +29,7 @@
 #include "RTIMU.h"
 
 namespace LSM6DSL {
-                                                                              // nice to have constants
-    constexpr RTFLOAT ACCEL_FSR[4] = { 6.1e-5, 4.88e-4, 2.44e-4, 1.22e-4 };   //G's/lsb
-    constexpr RTFLOAT GYRO_FSR[5] = { .004375, .00875, .01750, .035, .070 };  // dps/lsb
-    constexpr RTFLOAT ODR_SCALE =  13.0;                                     // Hz
-
+    
     // Register definitions
     typedef struct _CTRL1_XL_t {
         union {
@@ -116,8 +112,14 @@ namespace LSM6DSL {
 
 
 
+    // nice to have constants
+    constexpr RTFLOAT GYRO_FSR[5] = { .004375, .00875 , .01750, .035, .070 };  // dps/lsb 
+    constexpr RTFLOAT ACCEL_FSR[4] = { 6.1e-5, 4.88e-4, 2.44e-4, 1.22e-4 };   //G's/lsb
+    constexpr RTFLOAT ODR_SCALE = 13.0;                                     // Hz
 
-          // register map
+
+
+    // register map
     enum {
         FUNC_CFG_ACCESS          = 0x1,    // r/w
         SENSOR_SYNC_TIME_FRAME   = 0x4,    // r/w

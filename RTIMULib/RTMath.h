@@ -137,13 +137,16 @@ public:
     const RTQuaternion operator *(const RTFLOAT val) const;
     const RTQuaternion operator -(const RTQuaternion& qb) const;
     const RTQuaternion operator -(const RTFLOAT val) const;
+    const RTQuaternion operator +(const RTQuaternion& qb) const;
 
     void normalize();
+    RTFLOAT length();
     void toEuler(RTVector3& vec);
     void fromEuler(RTVector3& vec);
     RTQuaternion conjugate() const;
     void toAngleVector(RTFLOAT& angle, RTVector3& vec);
     void fromAngleVector(const RTFLOAT& angle, const RTVector3& vec);
+    static RTQuaternion slerp(const RTQuaternion& q1, const RTQuaternion& q2, RTFLOAT t);
 
     void zero();
     const char *display();

@@ -29,28 +29,44 @@
 #include "RTFusion.h"
 #include "RTIMUSettings.h"
 
-class RTFusionComplimentary : public RTFusion{
+class RTFusionComplimentary : public RTFusion {
 public:
     RTFusionComplimentary();
     // ~RTFusionComplimentary();
 
     int fusionType() { return RTFUSION_TYPE_COMPLIMENTARY; }
     void reset();
-    void newIMUData(RTIMU_DATA& data, const RTIMUSettings *settings);
+    void newIMUData(RTIMU_DATA &data, const RTIMUSettings *settings);
 
-    inline void setGyroAlphaThreshold(RTFLOAT t1) { m_gyroAlphaThreshold = t1; }
-    inline void setAccelAlphaThreshold(RTFLOAT t2) { m_accelAlphaThreshold = t2; }
-    
+
 private:
-    static constexpr RTFLOAT M_ACCEL_FILTER_THRESHOLD = 0.2;
-    static constexpr RTFLOAT M_GYRO_FILTER_THRESHOLD = 0.3;
+    static constexpr RTFLOAT M_ACCEL_FILTER_THRESHOLD = 0.6e-5;
+    static constexpr int M_ALPHA_IIR_ORDER = 5;
+    static constexpr int M_ACCEL_FIR_ORDER = 10;
+
+
+    class IRFilter {
+    public:
+        IRFilter(uint8_t size);
+        ~IRFilter();
+
+        void add(RTFLOAT data);
+        void setPoles(const RTFLOAT *poles);
+        RTFLOAT outputFIR(bool bypass);
+        RTFLOAT outputIIR(RTFLOAT data, bool bypass);
+        void zeros();
+    private:
+        uint8_t m_head;
+        uint8_t m_order;
+        uint8_t m_sampleCount;
+        RTFLOAT *m_poles;
+        RTFLOAT *m_data;
+    };
 
     void predict();
     void update();
 
     RTFLOAT m_filterAlpha;
-    RTFLOAT m_gyroAlphaThreshold;
-    RTFLOAT m_accelAlphaThreshold;
 
     RTVector3 m_gyro;										// unbiased gyro data
     RTFLOAT m_timeDelta;                                    // time between predictions
@@ -59,6 +75,9 @@ private:
 
     int m_sampleNumber;                                     // number of samples accumulated
 
+    IRFilter m_accelFIRFilter;
+
+    IRFilter m_alphaIIRFilter;
 };
 
 

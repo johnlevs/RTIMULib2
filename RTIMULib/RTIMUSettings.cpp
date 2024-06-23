@@ -596,11 +596,11 @@ void RTIMUSettings::setDefaults()
 
     //  LSM9DS1 defaults
 
-    m_LSM9DS1PollMode = LSM9DS1_FAST_POLL_MODE_OFF;
+    m_LSM9DS1PollMode = LSM9DS1_FIFO_CONTINUOUS_MODE;
 
     m_LSM9DS1GyroSampleRate = LSM9DS1_GYRO_SAMPLERATE_119;
     m_LSM9DS1GyroBW = LSM9DS1_GYRO_BANDWIDTH_1;
-    m_LSM9DS1GyroHpf = LSM9DS1_GYRO_HPF_4;
+    m_LSM9DS1GyroHpf = LSM9DS1_GYRO_HPF_OFF; //note: For higher ODRs (238hz+), this tends to mess with the gyro measurements and provide a delayed negative feedback for higher filter cutoff frequencies, making readings less sutable for IMU applications.
     m_LSM9DS1GyroFsr = LSM9DS1_GYRO_FSR_500;
 
     m_LSM9DS1AccelSampleRate = LSM9DS1_ACCEL_SAMPLERATE_119;
@@ -1701,7 +1701,7 @@ bool RTIMUSettings::saveSettings()
 
         setBlank();
         setComment("");
-        setComment("Accel anti-aliasing filter bandwidth selection (recommended disabled) - "); // appears to remove gravity? from the accel data
+        setComment("Accel anti-aliasing filter bandwidth selection - "); // appears to remove gravity (in some undocumented way) from the accel data
         setComment(" -2 = disabled");
         setComment(" -1 = automatic (see lsm9ds1 manual for details)");
         setComment("  0 = 408Hz");

@@ -27,7 +27,7 @@
 #include "RTIMU.h"
 #include "RTIMULSM6DSLMap.h"
 class RTIMULSM6DSLLIS3MDL : public RTIMU {
-    public:
+public:
     RTIMULSM6DSLLIS3MDL(RTIMUSettings *settings);
     ~RTIMULSM6DSLLIS3MDL();
 
@@ -38,24 +38,8 @@ class RTIMULSM6DSLLIS3MDL : public RTIMU {
     virtual bool IMURead();
 
 
-    private:
-    uint8_t m_gyroAccelSlaveAddr;
+private:
 
-    RTFLOAT m_accelScale;
-    RTFLOAT m_gyroScale;
-
-      // Structs to store register values
-    LSM6DSL::CTRL1_XL_t m_ctrl1xl;
-    LSM6DSL::CTRL2_G_t m_ctrl2g;
-    LSM6DSL::CTRL3_C_t m_ctrl3c;
-    LSM6DSL::CTRL5_C_t m_ctrl5c;
-    LSM6DSL::CTRL10_C_t m_ctrl10c;
-    LSM6DSL::WAKE_UP_DUR_t m_wakeUpDur;
-
-    RTIMUFifoBuffer m_fifoCache;
-
-    uint64_t m_timeTagRolloverCount;
-    uint64_t m_timeTagBaseOffset;
 
     // register setters
     bool setCtrl1XL();
@@ -72,7 +56,7 @@ class RTIMULSM6DSLLIS3MDL : public RTIMU {
     bool fifoRead();
     bool dataRegRead();
 
-
+    void setUpFusionParameters();
 
 
     // read/write helpers
@@ -87,6 +71,25 @@ class RTIMULSM6DSLLIS3MDL : public RTIMU {
         }
         return value;
     }
+
+
+    uint8_t m_gyroAccelSlaveAddr;
+
+    RTFLOAT m_accelScale;
+    RTFLOAT m_gyroScale;
+
+    // Structs to store register values
+    LSM6DSL::CTRL1_XL_t m_ctrl1xl;
+    LSM6DSL::CTRL2_G_t m_ctrl2g;
+    LSM6DSL::CTRL3_C_t m_ctrl3c;
+    LSM6DSL::CTRL5_C_t m_ctrl5c;
+    LSM6DSL::CTRL10_C_t m_ctrl10c;
+    LSM6DSL::WAKE_UP_DUR_t m_wakeUpDur;
+
+    RTIMUFifoBuffer m_fifoCache;
+
+    uint64_t m_timeTagRolloverCount;
+    uint64_t m_timeTagBaseOffset;
 
 
 };

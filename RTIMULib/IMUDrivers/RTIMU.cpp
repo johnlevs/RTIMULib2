@@ -143,9 +143,11 @@ RTIMU *RTIMU::createIMU(RTIMUSettings *settings)
 
 RTIMU::RTIMU(RTIMUSettings *settings)
 {
+#ifndef HAL_QUIET
     printf("\n********************************************\n");
     printf("RTIMU verison : 8.0.1\n");
     printf("********************************************\n\n");
+#endif
     m_settings = settings;
 
     m_compassCalibrationMode = false;

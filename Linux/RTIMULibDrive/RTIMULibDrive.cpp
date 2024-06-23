@@ -43,7 +43,7 @@ int main()
 
     if ((imu == NULL) || (imu->IMUType() == RTIMU_TYPE_NULL)) {
         printf("No IMU found\n");
-        exit(1);
+        return -1;
     }
 
     //  This is an opportunity to manually override any settings before the call IMUInit
@@ -58,40 +58,38 @@ int main()
     imu->setSlerpPower(0.02);
     imu->setGyroEnable(true);
     imu->setAccelEnable(true);
-    imu->setCompassEnable(true);
+    imu->setCompassEnable(false);
 
     //  set up for rate timer
 
     rateTimer = displayTimer = RTMath::currentUSecsSinceEpoch();
 
     //  now just process data
-
+    RTIMU_DATA imuData;
     while (1) {
         //  poll at the rate recommended by the IMU
         // comment this line out or remove 1000 for the lsm9ds1
-        usleep(imu->IMUGetPollInterval() * 1000);
+        // usleep(imu->IMUGetPollInterval() * 1000);
 
+        now = RTMath::currentUSecsSinceEpoch();
+        
         if (imu->IMURead()) {
-            RTIMU_DATA imuData = imu->getIMUData();
+            imuData = imu->getIMUData();
             sampleCount++;
+        }
 
-            now = RTMath::currentUSecsSinceEpoch();
+        //  display 10 times per second
+        if ((now - displayTimer) > (1e6) / 100) {
+            printf("Sample rate %d: %s\r", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
+            fflush(stdout);
+            displayTimer = now;
+        }
 
-            //  display 10 times per second
-
-            if ((now - displayTimer) > 100000) {
-                printf("Sample rate %d: %s\r", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
-                fflush(stdout);
-                displayTimer = now;
-            }
-
-            //  update rate every second
-
-            if ((now - rateTimer) > 1000000) {
-                sampleRate = sampleCount;
-                sampleCount = 0;
-                rateTimer = now;
-            }
+        //  update rate every second
+        if ((now - rateTimer) > 1000000) {
+            sampleRate = sampleCount;
+            sampleCount = 0;
+            rateTimer = now;
         }
     }
 }

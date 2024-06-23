@@ -153,7 +153,10 @@ bool RTIMULSM9DS1::IMUInit()
     m_imuData.humidityValid = false;
     m_imuData.pressure = 0;
     m_imuData.temperature = 0;
-
+    
+    // fusion setup
+    // set fusion slerp power to accel scale
+    m_fusion->setSlerpPower(m_accelScale);
 
 
     HAL_INFO("LSM9DS1 init complete\n");
