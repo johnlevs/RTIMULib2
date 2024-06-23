@@ -58,38 +58,41 @@ int main()
     imu->setSlerpPower(0.02);
     imu->setGyroEnable(true);
     imu->setAccelEnable(true);
-    imu->setCompassEnable(false);
+    imu->setCompassEnable(true);
 
     //  set up for rate timer
 
     rateTimer = displayTimer = RTMath::currentUSecsSinceEpoch();
 
-    //  now just process data
-    RTIMU_DATA imuData;
+
     while (1) {
         //  poll at the rate recommended by the IMU
-        // comment this line out or remove 1000 for the lsm9ds1
+
         // usleep(imu->IMUGetPollInterval() * 1000);
 
-        now = RTMath::currentUSecsSinceEpoch();
-        
-        if (imu->IMURead()) {
-            imuData = imu->getIMUData();
+        while (imu->IMURead()) {
+            RTIMU_DATA imuData = imu->getIMUData();
+
             sampleCount++;
-        }
 
-        //  display 10 times per second
-        if ((now - displayTimer) > (1e6) / 100) {
-            printf("Sample rate %d: %s\r", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
-            fflush(stdout);
-            displayTimer = now;
-        }
+            now = RTMath::currentUSecsSinceEpoch();
 
-        //  update rate every second
-        if ((now - rateTimer) > 1000000) {
-            sampleRate = sampleCount;
-            sampleCount = 0;
-            rateTimer = now;
+            //  display 10 times per second
+
+            if ((now - displayTimer) > 100000) {
+                printf("Sample rate %d: %s\n", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
+
+                fflush(stdout);
+                displayTimer = now;
+            }
+
+            //  update rate every second
+
+            if ((now - rateTimer) > 1000000) {
+                sampleRate = sampleCount;
+                sampleCount = 0;
+                rateTimer = now;
+            }
         }
     }
 }
