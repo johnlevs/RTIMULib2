@@ -269,9 +269,9 @@ bool RTIMULSM6DSLLIS3MDL::IMURead()
 
     //  sort out accel data;
 
-
+    temp = m_imuData.accel.x();
     m_imuData.accel.setX(-m_imuData.accel.y());
-    m_imuData.accel.setY(-m_imuData.accel.x());
+    m_imuData.accel.setY(-temp);
 
     //  now do standard processing
 
