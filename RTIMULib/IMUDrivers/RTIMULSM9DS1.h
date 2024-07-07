@@ -92,8 +92,6 @@ private:
     unsigned char m_accelGyroSlaveAddr;                     // I2C address of accel andgyro
     unsigned char m_magSlaveAddr;                           // I2C address of mag
 
-    RTFLOAT m_gyroScale;
-    RTFLOAT m_accelScale;
     RTFLOAT m_compassScale;
 
     uint64_t m_magODRInterval;                              //  1e6/ODR for magnetometer

@@ -275,7 +275,7 @@ void RTVector3::normalize()
 RTFLOAT RTVector3::length()
 {
     return sqrt(m_data[0] * m_data[0] + m_data[1] * m_data[1] +
-            m_data[2] * m_data[2]);
+        m_data[2] * m_data[2]);
 }
 
 //----------------------------------------------------------
@@ -435,6 +435,12 @@ void RTQuaternion::toEuler(RTVector3& vec)
     vec.setX(atan2(2.0 * (m_data[2] * m_data[3] + m_data[0] * m_data[1]),
             1 - 2.0 * (m_data[1] * m_data[1] + m_data[2] * m_data[2])));
 
+    // adjust roll angle between +/- 90 degrees
+    if (vec.x() > RTMATH_PI/2)
+        vec.setX(RTMATH_PI - vec.x());
+    else if (vec.x() < -RTMATH_PI/2)
+        vec.setX(-fabs(RTMATH_PI + vec.x()));
+
     vec.setY(asin(2.0 * (m_data[0] * m_data[2] - m_data[1] * m_data[3])));
 
     vec.setZ(atan2(2.0 * (m_data[1] * m_data[2] + m_data[0] * m_data[3]),
@@ -499,24 +505,33 @@ void RTQuaternion::fromAngleVector(const RTFLOAT& angle, const RTVector3& vec)
 RTQuaternion RTQuaternion::slerp(const RTQuaternion &q1, const RTQuaternion &q2, RTFLOAT t)
 {
     // jump out if invalid interpolation value given
-    if (t > 1)
-        return q2;
-    if (t < 0)
+    if (t >= 1)
         return q1;
+    if (t <= 0)
+        return q2;
 
     RTQuaternion q3, q4;
     // http://www.neil.dantam.name/note/dantam-quaternion.pdf eq. (42) for quaternion angle difference... "more accurate"
     q3 = q1 - q2;
     q4 = q1 + q2;
-    RTFLOAT theta = atan2(q3.length(),q4.length());
-    RTFLOAT sinTheta = sin(theta);
+    RTFLOAT theta = 2 * atan2(q3.length(), q4.length());
 
-    q3 = q1;
-    q4 = q2;
-    q4 *= sin(theta * (1 - t)) / sinTheta;
-    q3 *= sin(theta * t) / sinTheta;
-    
-    return q3 + q4;
+    if (theta > RTMATH_PI / 2) {
+        theta = RTMATH_PI - theta;
+        RTFLOAT sinTheta = sin(theta);
+        q3 = q1;
+        q4 = q2;
+        q4 *= sin(theta * (1 - t)) / sinTheta;
+        q3 *= sin(theta * t) / sinTheta;
+        return q3 - q4;
+    } else {
+        RTFLOAT sinTheta = sin(theta);
+        q3 = q1;
+        q4 = q2;
+        q4 *= sin(theta * (1 - t)) / sinTheta;
+        q3 *= sin(theta * t) / sinTheta;
+        return q3 + q4;
+    }
 }
 
 

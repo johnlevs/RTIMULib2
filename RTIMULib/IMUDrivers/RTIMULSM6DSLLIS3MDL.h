@@ -75,8 +75,6 @@ private:
 
     uint8_t m_gyroAccelSlaveAddr;
 
-    RTFLOAT m_accelScale;
-    RTFLOAT m_gyroScale;
 
     // Structs to store register values
     LSM6DSL::CTRL1_XL_t m_ctrl1xl;

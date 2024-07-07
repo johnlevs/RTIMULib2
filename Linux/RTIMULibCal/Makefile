@@ -60,6 +60,7 @@ DEPS    = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/RTIMUHal.h \
     $(RTIMULIBPATH)/RTFusion.h \
     $(RTIMULIBPATH)/RTFusionKalman4.h \
+	$(RTIMULIBPATH)/RTFusionComplimentary.h \
     $(RTIMULIBPATH)/RTFusionRTQF.h \
     $(RTIMULIBPATH)/RTIMUSettings.h \
     $(RTIMULIBPATH)/RTIMUAccelCal.h \
@@ -74,6 +75,7 @@ DEPS    = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/IMUDrivers/RTIMUGD20HM303DLHC.h \
     $(RTIMULIBPATH)/IMUDrivers/RTIMULSM9DS0.h \
     $(RTIMULIBPATH)/IMUDrivers/RTIMULSM9DS1.h \
+	$(RTIMULIBPATH)/IMUDrivers/RTIMULSM6DSLLIS3MDL.h \
     $(RTIMULIBPATH)/IMUDrivers/RTIMUBMX055.h \
     $(RTIMULIBPATH)/IMUDrivers/RTIMUBNO055.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressure.h \
@@ -89,6 +91,7 @@ OBJECTS = objects/RTIMULibCal.o \
     objects/RTFusion.o \
     objects/RTFusionKalman4.o \
     objects/RTFusionRTQF.o \
+	objects/RTFusionComplimentary.o \
     objects/RTIMUSettings.o \
     objects/RTIMUAccelCal.o \
     objects/RTIMUMagCal.o \
@@ -99,6 +102,7 @@ OBJECTS = objects/RTIMULibCal.o \
     objects/RTIMUGD20HM303D.o \
     objects/RTIMUGD20M303DLHC.o \
     objects/RTIMUGD20HM303DLHC.o \
+	objects/RTIMULSM6DSLLIS3MDL.o \
     objects/RTIMULSM9DS0.o \
     objects/RTIMULSM9DS1.o \
     objects/RTIMUBMX055.o \

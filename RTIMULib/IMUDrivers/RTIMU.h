@@ -158,6 +158,11 @@ public:
     const RTVector3& getAccel() { return m_imuData.accel; } // get accel data in gs
     const RTVector3& getCompass() { return m_imuData.compass; } // gets compass data in uT
 
+    // not garunteed to be implimented in every driver
+    inline RTFLOAT getGyroScale() { return m_gyroScale; }
+    // not garunteed to be implimented in every driver
+    inline RTFLOAT getAccelScale() { return m_accelScale; }
+
     RTVector3 getAccelResiduals() { return m_fusion->getAccelResiduals(); }
 
 protected:
@@ -194,6 +199,9 @@ protected:
     float m_runtimeMagCalMin[3];                            // runtime min mag values seen
 
     static float m_axisRotation[RTIMU_AXIS_ROTATION_COUNT][9];    // array of rotation matrices
+
+    float m_gyroScale;
+    float m_accelScale;
 
 
     class RTIMUFifoBuffer {

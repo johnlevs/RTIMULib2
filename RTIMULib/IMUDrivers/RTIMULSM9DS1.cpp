@@ -156,7 +156,7 @@ bool RTIMULSM9DS1::IMUInit()
     
     // fusion setup
     // set fusion slerp power to accel scale
-    m_fusion->setSlerpPower(m_accelScale);
+    m_fusion->setSlerpPower(.03);
 
 
     HAL_INFO("LSM9DS1 init complete\n");

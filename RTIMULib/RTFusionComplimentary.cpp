@@ -36,7 +36,7 @@ RTFusionComplimentary::RTFusionComplimentary() :
 
     const RTFLOAT polesFIR[M_ACCEL_FIR_ORDER] = { 1,1,1,1,1,1,1,1,1,1 };
     const RTFLOAT polesIIR[M_ALPHA_IIR_ORDER] = { 1,2,3,4,5 };
-    
+
     m_accelFIRFilter.setPoles(polesFIR);
     m_alphaIIRFilter.setPoles(polesIIR);
 }
@@ -46,6 +46,7 @@ void RTFusionComplimentary::reset()
 {
     m_accelFIRFilter.zeros();
     m_alphaIIRFilter.zeros();
+    m_stateQ.zero();
 }
 
 void RTFusionComplimentary::predict()
@@ -77,24 +78,28 @@ void RTFusionComplimentary::predict()
 void RTFusionComplimentary::update()
 {
     if (m_enableAccel) {
-        
+
         // deterine alpha value used in slerp
         RTFLOAT accelNorm = fabs(m_accel.length() - 1);
-        RTFLOAT lastOutput = m_alphaIIRFilter.outputFIR(false);
+        RTFLOAT lastOutput = m_accelFIRFilter.outputFIR(false);
         m_accelFIRFilter.add(accelNorm);
 
         bool bypassIR = accelNorm > lastOutput;
         RTFLOAT accelMag = m_accelFIRFilter.outputFIR(bypassIR);
         RTFLOAT alpha = accelMag / m_slerpPower;                   // slerp power can be set in imu drivers
-        
+
         alpha = alpha > 1 ? 1 : alpha;
         alpha = m_alphaIIRFilter.outputIIR(alpha, bypassIR);
         alpha = alpha > 1 ? 1 : alpha;
-        
+
+        if (m_debug) {
+            HAL_INFO1("accelMag: %f\n", accelMag);
+            HAL_INFO1("alpha: %f\n", alpha);
+        }
         // slerp gyro solution with accel solution
         m_fusionQPose = RTQuaternion::slerp(m_stateQ, m_measuredQPose, alpha);
-    }
-    else {
+        m_stateQ = m_fusionQPose;
+    } else {
         m_fusionQPose = m_stateQ;
     }
     m_fusionQPose.toEuler(m_fusionPose);
@@ -188,13 +193,13 @@ RTFLOAT RTFusionComplimentary::IRFilter::outputFIR(bool bypass)
     RTFLOAT sum = 0;
     for (int i = 0; i < m_order; i++)
         sum += m_data[(m_head + i + 1) % m_order] * m_poles[m_order - 1 - i];
-    
+
     return sum;
 }
 
 RTFLOAT RTFusionComplimentary::IRFilter::outputIIR(RTFLOAT data, bool bypass)
 {
-    if (m_sampleCount < m_order || bypass){
+    if (m_sampleCount < m_order || bypass) {
         add(data);
         return m_data[m_head];
     }
